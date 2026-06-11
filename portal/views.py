@@ -97,6 +97,70 @@ def crear_orden(request):
     return render(request, 'portal/orden_form.html', {'cliente': cliente, 'equipos': equipos})
 
 
+def solicitar_servicio(request):
+    if request.method == 'POST':
+        if request.POST.get('_url', '').strip():
+            return redirect('/')
+
+        rut = request.POST.get('rut', '').strip()
+        razon_social = request.POST.get('razon_social', '').strip()
+        if not rut or not razon_social:
+            messages.error(request, 'RUT y Razón Social son obligatorios.')
+            return render(request, 'portal/solicitar_form.html')
+
+        cliente, _ = Cliente.objects.get_or_create(
+            rut=rut,
+            defaults={'razon_social': razon_social},
+        )
+        if cliente.razon_social != razon_social:
+            cliente.razon_social = razon_social
+            cliente.save()
+
+        motivo_texto = request.POST.get('diagnostico', '').strip()
+        if not motivo_texto:
+            messages.error(request, 'Describe el problema.')
+            return render(request, 'portal/solicitar_form.html', {'cliente': cliente})
+
+        contacto = request.POST.get('nombre_contacto', '').strip()
+        telefono = request.POST.get('telefono', '').strip()
+        email = request.POST.get('email', '').strip()
+        empresa = request.POST.get('empresa', '').strip()
+        centro_costo = request.POST.get('centro_costo', '').strip()
+
+        marca = request.POST.get('equipo_marca', '').strip()
+        modelo = request.POST.get('equipo_modelo', '').strip()
+        sistema_operativo = request.POST.get('sistema_operativo', '').strip()
+        equipo = None
+        if marca or modelo:
+            especs = f'SO: {sistema_operativo}' if sistema_operativo else ''
+            equipo = Equipo.objects.create(
+                cliente=cliente,
+                tipo='otro',
+                marca=marca or 'Sin especificar',
+                modelo=modelo or 'Sin especificar',
+                especificaciones=especs,
+            )
+
+        orden = OrdenServicio.objects.create(
+            cliente=cliente,
+            equipo=equipo,
+            motivo=motivo_texto,
+            contacto=contacto,
+            telefono=telefono,
+            email_contacto=email,
+            empresa=empresa,
+            centro_costo=centro_costo,
+            estado='pendiente',
+        )
+
+        for f in request.FILES.getlist('fotos'):
+            FotoOrden.objects.create(orden=orden, imagen=f)
+
+        return render(request, 'portal/seguir_form.html', {'codigo_creado': orden.codigo_seguimiento})
+
+    return render(request, 'portal/solicitar_form.html')
+
+
 def seguir_ticket(request):
     codigo = request.GET.get('codigo', '').strip().upper()
     if codigo:

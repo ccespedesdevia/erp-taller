@@ -1,0 +1,74 @@
+{% extends "portal/base_portal.html" %}
+{% block title %}Solicitar Servicio{% endblock %}
+
+{% block content %}
+<div class="card shadow">
+    <div class="card-header"><h4 class="mb-0">Solicitar Servicio Técnico</h4></div>
+    <div class="card-body">
+        <p class="text-muted">Completa el formulario y recibirás un código para dar seguimiento a tu ticket.</p>
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            <input type="text" name="_url" style="display:none" tabindex="-1" autocomplete="off">
+
+            <h6 class="text-primary">Tus datos</h6>
+            <div class="row">
+                <div class="col-md-4 mb-3">
+                    <label class="form-label">RUT *</label>
+                    <input type="text" name="rut" class="form-control" required placeholder="Ej: 12345678-9">
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label class="form-label">Razón Social *</label>
+                    <input type="text" name="razon_social" class="form-control" required placeholder="Ej: Empresa Ejemplo SpA">
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label class="form-label">Tu nombre (contacto)</label>
+                    <input type="text" name="nombre_contacto" class="form-control" placeholder="Ej: María González">
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label class="form-label">Teléfono</label>
+                    <input type="tel" name="telefono" class="form-control" placeholder="Ej: +56 9 1234 5678">
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label class="form-label">Email</label>
+                    <input type="email" name="email" class="form-control" placeholder="Ej: maria@ejemplo.cl">
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label class="form-label">Centro de costo</label>
+                    <input type="text" name="centro_costo" class="form-control" placeholder="Ej: TI, Operaciones">
+                </div>
+            </div>
+
+            <hr>
+            <h6 class="text-primary">Equipo</h6>
+            <div class="row">
+                <div class="col-md-4 mb-3">
+                    <label class="form-label">Marca</label>
+                    <input type="text" name="equipo_marca" class="form-control" placeholder="Ej: Lenovo, Dell, HP">
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label class="form-label">Modelo</label>
+                    <input type="text" name="equipo_modelo" class="form-control" placeholder="Ej: ThinkPad X1, OptiPlex">
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label class="form-label">Sistema operativo</label>
+                    <input type="text" name="sistema_operativo" class="form-control" placeholder="Ej: Windows 11, macOS">
+                </div>
+            </div>
+
+            <hr>
+            <div class="mb-3">
+                <label class="form-label">Describe el problema *</label>
+                <textarea name="diagnostico" class="form-control" rows="5" required placeholder="¿Qué sucede? ¿Desde cuándo? ¿Qué has intentado?"></textarea>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Adjuntar fotos (opcional)</label>
+                <input type="file" name="fotos" class="form-control" multiple accept="image/*">
+            </div>
+
+            <button type="submit" class="btn btn-primary">Enviar Solicitud</button>
+            <a href="{% url 'portal_seguir' %}" class="btn btn-outline-secondary">Ya tengo un código</a>
+        </form>
+    </div>
+</div>
+{% endblock %}
