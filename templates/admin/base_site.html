@@ -1,0 +1,14 @@
+{% extends "admin/base.html" %}
+{% load static %}
+
+{% block title %}{% if subtitle %}{{ subtitle }} | {% endif %}{{ title }} | ERP Taller{% endblock %}
+
+{% block branding %}
+<h1 id="site-name"><a href="{% url 'dashboard' %}">ERP Taller Informático</a></h1>
+{% endblock %}
+
+{% block nav-global %}
+<div style="float:right; margin-right:20px; padding:10px 0;">
+    <a href="{% url 'dashboard' %}" style="color:white; text-decoration:none; font-weight:bold;">Dashboard</a>
+</div>
+{% endblock %}
