@@ -9,117 +9,133 @@
     </ol>
 </nav>
 
-<div class="card shadow mb-4">
-    <div class="card-header d-flex justify-content-between align-items-center">
-        <h4 class="mb-0">Ticket #{{ orden.id }}</h4>
-        <span class="badge fs-6 bg-{% if orden.estado == 'pendiente' %}warning{% elif orden.estado == 'en_curso' %}info{% elif orden.estado == 'completado' %}success{% else %}secondary{% endif %}">{{ orden.get_estado_display }}</span>
-    </div>
+<!-- Código de seguimiento -->
+<div class="alert alert-success text-center py-2 d-flex justify-content-between align-items-center">
+    <span><strong>Código:</strong> {{ orden.codigo_seguimiento }}</span>
+    <span class="badge fs-6 bg-{% if orden.estado == 'pendiente' %}warning{% elif orden.estado == 'en_curso' %}info{% elif orden.estado == 'completado' %}success{% else %}secondary{% endif %}">{{ orden.get_estado_display }}</span>
+</div>
+
+<!-- Info general -->
+<div class="card shadow-sm mb-3">
     <div class="card-body">
-        <div class="alert alert-success text-center py-3">
-            <strong>Código de seguimiento:</strong>
-            <span style="font-size:1.5rem;font-weight:bold;letter-spacing:3px;">{{ orden.codigo_seguimiento }}</span>
-            <br><small>Comparte este código para que el cliente consulte el estado del ticket sin necesidad de usuario.</small>
+        <div class="row">
+            <div class="col-md-4 mb-2"><small class="text-muted d-block">Empresa</small><strong>{{ orden.cliente.razon_social }}</strong></div>
+            <div class="col-md-3 mb-2"><small class="text-muted d-block">Ingreso</small><strong>{{ orden.fecha_ingreso|date:"d/m/Y" }}</strong></div>
+            <div class="col-md-3 mb-2"><small class="text-muted d-block">Técnico</small><strong>{{ orden.tecnico|default:"—" }}</strong></div>
+            {% if orden.horas_trabajadas %}
+            <div class="col-md-2 mb-2"><small class="text-muted d-block">Horas</small><strong>{{ orden.horas_trabajadas }}</strong></div>
+            {% endif %}
         </div>
-        <div class="row mb-3">
-            <div class="col-md-6">
-                <strong>Equipo:</strong> {{ orden.equipo|default:"No especificado" }}
-            </div>
-            <div class="col-md-3">
-                <strong>Ingreso:</strong> {{ orden.fecha_ingreso|date:"d/m/Y" }}
-            </div>
-            <div class="col-md-3">
-                <strong>Técnico:</strong> {{ orden.tecnico|default:"—" }}
-            </div>
-        </div>
-
-        <div class="mb-3">
-            <h6>Diagnóstico / Motivo</h6>
-            <p class="bg-light p-3 rounded">{{ orden.diagnostico|linebreaks|default:"Pendiente" }}</p>
-        </div>
-
-        {% if orden.trabajo_realizado %}
-        <div class="mb-3">
-            <h6>Trabajo Realizado</h6>
-            <p class="bg-light p-3 rounded">{{ orden.trabajo_realizado|linebreaks }}</p>
-        </div>
+        {% if orden.equipo %}
+        <hr class="my-2">
+        <small class="text-muted d-block">Equipo</small>
+        <strong>{{ orden.equipo.marca }} {{ orden.equipo.modelo }}</strong>
+        <small class="text-muted ms-2">({{ orden.equipo.get_tipo_display }})</small>
+        {% if orden.equipo.numero_serie %}<small class="text-muted ms-3">Serie: {{ orden.equipo.numero_serie }}</small>{% endif %}
         {% endif %}
-
-        {% if orden.software_instalado %}
-        <div class="mb-3">
-            <h6>Software Instalado</h6>
-            <p class="bg-light p-3 rounded">{{ orden.software_instalado|linebreaks }}</p>
-        </div>
-        {% endif %}
-
-        {% if orden.horas_trabajadas %}
-        <div class="mb-3"><strong>Horas trabajadas:</strong> {{ orden.horas_trabajadas }}</div>
-        {% endif %}
-
-        {% with items=orden.repuestos.all %}
-        {% if items %}
-        <div class="mb-3">
-            <h6>Detalle del cobro</h6>
-            <table class="table table-sm table-bordered">
-                <thead><tr><th>Producto/Servicio</th><th>Cant.</th><th>Valor neto</th><th>Total neto</th></tr></thead>
-                <tbody>
-                    {% for r in items %}
-                    <tr><td>{{ r.producto.nombre }}</td><td>{{ r.cantidad }}</td><td>${{ r.precio_unitario|floatformat:0 }}</td><td class="text-end">${{ r.total_neto|floatformat:0 }}</td></tr>
-                    {% endfor %}
-                    <tr class="table-secondary fw-bold">
-                        <td colspan="3" class="text-end">Total neto (sin IVA):</td>
-                        <td class="text-end">${{ orden.total_neto|floatformat:0 }}</td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
-        {% endif %}
-        {% endwith %}
-
-        {% if orden.fotos.all %}
-        <div class="mb-3">
-            <h6>Fotos</h6>
-            <div class="row">
-                {% for f in orden.fotos.all %}
-                <div class="col-md-3 mb-2">
-                    <img src="{{ f.imagen.url }}" class="img-fluid rounded" alt="{{ f.descripcion|default:'Foto' }}">
-                </div>
-                {% endfor %}
-            </div>
-        </div>
-        {% endif %}
-
-        {% if orden.garantia_fin %}
-        <div class="alert alert-info">Garantía vigente hasta {{ orden.garantia_fin|date:"d/m/Y" }}</div>
-        {% endif %}
-
-        {% with comentarios=orden.comentarios.all %}
-        <div class="mt-4">
-            <h6>Conversación</h6>
-            <div class="bg-light p-3 rounded" style="max-height:300px;overflow-y:auto;">
-                {% for c in comentarios %}
-                <div class="mb-2 {% if c.es_tecnico %}text-end{% endif %}">
-                    <small class="text-muted">{{ c.autor }} · {{ c.created_at|date:"d/m H:i" }}</small>
-                    <div class="p-2 rounded d-inline-block {% if c.es_tecnico %}bg-primary text-white{% else %}bg-white border{% endif %}" style="max-width:80%;">
-                        {{ c.texto|linebreaks }}
-                    </div>
-                </div>
-                {% empty %}
-                <p class="text-muted mb-0">Sin comentarios aún.</p>
-                {% endfor %}
-            </div>
-
-            <form method="post" action="{% url 'portal_comentar' orden.pk %}" class="mt-2">
-                {% csrf_token %}
-                <input type="hidden" name="autor" value="{{ user.cliente.razon_social }}">
-                <div class="input-group">
-                    <input type="text" name="texto" class="form-control" placeholder="Escribe un mensaje..." required>
-                    <button class="btn btn-primary btn-sm">Enviar</button>
-                </div>
-            </form>
-        </div>
-        {% endwith %}
     </div>
 </div>
 
-<a href="{% url 'portal_dashboard' %}" class="btn btn-secondary">Volver a mis tickets</a>
+<!-- Diagnóstico -->
+<div class="card shadow-sm mb-3">
+    <div class="card-header"><strong>Diagnóstico / Motivo</strong></div>
+    <div class="card-body">{{ orden.diagnostico|linebreaks|default:"Pendiente" }}</div>
+</div>
+
+<!-- Trabajo realizado -->
+{% if orden.trabajo_realizado %}
+<div class="card shadow-sm mb-3">
+    <div class="card-header"><strong>Trabajo Realizado</strong></div>
+    <div class="card-body">{{ orden.trabajo_realizado|linebreaks }}</div>
+</div>
+{% endif %}
+
+<!-- Software -->
+{% if orden.software_instalado %}
+<div class="card shadow-sm mb-3">
+    <div class="card-header"><strong>Software Instalado / Desinstalado</strong></div>
+    <div class="card-body">{{ orden.software_instalado|linebreaks }}</div>
+</div>
+{% endif %}
+
+<!-- Detalle del cobro -->
+{% with items=orden.repuestos.all %}
+{% if items %}
+<div class="card shadow-sm mb-3">
+    <div class="card-header"><strong>Detalle del cobro</strong></div>
+    <div class="card-body p-0">
+        <table class="table table-bordered mb-0">
+            <thead><tr><th>Producto/Servicio</th><th class="text-center">Cant.</th><th class="text-end">Valor neto</th><th class="text-end">Total neto</th></tr></thead>
+            <tbody>
+                {% for r in items %}
+                <tr><td>{{ r.producto.nombre }}</td><td class="text-center">{{ r.cantidad }}</td><td class="text-end">${{ r.precio_unitario|floatformat:0 }}</td><td class="text-end">${{ r.total_neto|floatformat:0 }}</td></tr>
+                {% endfor %}
+                <tr class="table-active fw-bold">
+                    <td colspan="3" class="text-end">Total neto (sin IVA)</td>
+                    <td class="text-end">${{ orden.total_neto|floatformat:0 }}</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endif %}
+{% endwith %}
+
+<!-- Fotos -->
+{% if orden.fotos.all %}
+<div class="card shadow-sm mb-3">
+    <div class="card-header"><strong>Fotos</strong></div>
+    <div class="card-body">
+        <div class="row">
+            {% for f in orden.fotos.all %}
+            <div class="col-md-3 mb-2">
+                <img src="{{ f.imagen.url }}" class="img-fluid rounded border" alt="{{ f.descripcion|default:'Foto' }}">
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Garantía -->
+{% if orden.garantia_fin %}
+<div class="alert alert-info d-flex align-items-center gap-2 mb-3">
+    <span>🛡️</span>
+    <span><strong>Garantía vigente</strong> hasta {{ orden.garantia_fin|date:"d/m/Y" }}</span>
+</div>
+{% endif %}
+
+<!-- Conversación -->
+{% with comentarios=orden.comentarios.all %}
+<div class="card shadow-sm mb-3">
+    <div class="card-header"><strong>Conversación</strong></div>
+    <div class="card-body">
+        <div style="max-height:300px;overflow-y:auto;">
+            {% for c in comentarios %}
+            <div class="mb-3 {% if c.es_tecnico %}text-end{% endif %}">
+                <small class="text-muted">{{ c.autor }} · {{ c.created_at|date:"d/m H:i" }}</small>
+                <div class="p-3 rounded d-inline-block {% if c.es_tecnico %}bg-primary text-white{% else %}bg-light border{% endif %}" style="max-width:80%;">
+                    {{ c.texto|linebreaks }}
+                </div>
+            </div>
+            {% empty %}
+            <p class="text-muted mb-0 text-center">Sin comentarios aún.</p>
+            {% endfor %}
+        </div>
+        <form method="post" action="{% url 'portal_comentar' orden.pk %}" class="mt-3 border-top pt-3">
+            {% csrf_token %}
+            <div class="row g-2">
+                <div class="col-md-10">
+                    <input type="text" name="texto" class="form-control form-control-sm" placeholder="Escribe tu mensaje..." required>
+                </div>
+                <div class="col-md-2">
+                    <button class="btn btn-primary btn-sm w-100">Enviar</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+{% endwith %}
+
+<a href="{% url 'portal_dashboard' %}" class="btn btn-outline-secondary">← Volver a mis tickets</a>
 {% endblock %}
