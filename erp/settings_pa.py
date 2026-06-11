@@ -4,7 +4,9 @@ import os
 
 DEBUG = False
 PA_USER = os.environ.get('PA_USER', 'ccespedesdevia1715')
-ALLOWED_HOSTS = [PA_USER + '.pythonanywhere.com']
+PA_DOMAIN = PA_USER + '.pythonanywhere.com'
+ALLOWED_HOSTS = [PA_DOMAIN]
+CSRF_TRUSTED_ORIGINS = ['https://' + PA_DOMAIN]
 
 SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-prod-7gH8kL2mN4pQ6rS9uV1wX3yZ5')
 
