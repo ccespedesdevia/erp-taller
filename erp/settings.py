@@ -19,6 +19,7 @@ INSTALLED_APPS = [
     'cotizaciones',
     'activos',
     'dashboard',
+    'portal',
 ]
 
 MIDDLEWARE = [

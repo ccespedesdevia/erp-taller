@@ -1,0 +1,30 @@
+{% extends "portal/base_portal.html" %}
+{% block title %}Nuevo Ticket{% endblock %}
+
+{% block content %}
+<div class="card shadow">
+    <div class="card-header"><h4 class="mb-0">Nuevo Ticket de Soporte</h4></div>
+    <div class="card-body">
+        <form method="post">
+            {% csrf_token %}
+            <div class="mb-3">
+                <label class="form-label">Equipo (opcional)</label>
+                <select name="equipo" class="form-select">
+                    <option value="">— Selecciona un equipo —</option>
+                    {% for e in equipos %}
+                    <option value="{{ e.id }}">{{ e }}</option>
+                    {% empty %}
+                    <option value="" disabled>No tienes equipos registrados</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Describe el problema *</label>
+                <textarea name="diagnostico" class="form-control" rows="5" required placeholder="¿Qué sucede? ¿Desde cuándo? ¿Qué has intentado?"></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary">Enviar Ticket</button>
+            <a href="{% url 'portal_dashboard' %}" class="btn btn-secondary">Cancelar</a>
+        </form>
+    </div>
+</div>
+{% endblock %}

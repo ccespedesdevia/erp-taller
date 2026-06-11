@@ -1,0 +1,60 @@
+{% extends "portal/base_portal.html" %}
+{% block title %}Mis Tickets{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>Bienvenido, {{ cliente.razon_social }}</h2>
+    <a href="{% url 'portal_crear_orden' %}" class="btn btn-primary">Nuevo Ticket</a>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-4 mb-3">
+        <div class="card text-bg-warning text-center p-3">
+            <h3>{{ pendientes }}</h3>
+            <p class="mb-0">Pendientes</p>
+        </div>
+    </div>
+    <div class="col-md-4 mb-3">
+        <div class="card text-bg-info text-center p-3">
+            <h3>{{ en_curso }}</h3>
+            <p class="mb-0">En curso</p>
+        </div>
+    </div>
+    <div class="col-md-4 mb-3">
+        <div class="card text-bg-success text-center p-3">
+            <h3>{{ completadas }}</h3>
+            <p class="mb-0">Completadas</p>
+        </div>
+    </div>
+</div>
+
+<div class="card shadow">
+    <div class="card-header"><h5 class="mb-0">Mis Tickets</h5></div>
+    <div class="card-body p-0">
+        <table class="table table-hover mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th>#</th>
+                    <th>Fecha</th>
+                    <th>Equipo</th>
+                    <th>Estado</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for orden in ordenes %}
+                <tr>
+                    <td>{{ orden.id }}</td>
+                    <td>{{ orden.fecha_ingreso|date:"d/m/Y" }}</td>
+                    <td>{{ orden.equipo|default:"—" }}</td>
+                    <td><span class="badge bg-{% if orden.estado == 'pendiente' %}warning{% elif orden.estado == 'en_curso' %}info{% elif orden.estado == 'completado' %}success{% else %}secondary{% endif %}">{{ orden.get_estado_display }}</span></td>
+                    <td><a href="{% url 'portal_orden_detail' orden.id %}" class="btn btn-sm btn-outline-primary">Ver</a></td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="5" class="text-center py-3 text-muted">No tienes tickets registrados.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

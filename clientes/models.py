@@ -1,7 +1,9 @@
 from django.db import models
+from django.contrib.auth.models import User
 
 
 class Cliente(models.Model):
+    user = models.OneToOneField(User, on_delete=models.SET_NULL, null=True, blank=True, verbose_name='Usuario portal')
     razon_social = models.CharField('Razón Social', max_length=200)
     rut = models.CharField('RUT', max_length=20, unique=True)
     direccion = models.TextField('Dirección', blank=True)
