@@ -77,14 +77,9 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 LOGIN_URL = '/admin/login/'
 LOGIN_REDIRECT_URL = '/admin/'
 
-# UltraMSG WhatsApp
-ULTRAMSG_INSTANCE_ID = ''
-ULTRAMSG_TOKEN = ''
-WHATSAPP_TECNICO = ''  # tu número WhatsApp con formato +569XXXXXXXX
-
-# Email (fallback si WhatsApp falla)
+# Email (desarrollo — en consola)
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
-DEFAULT_FROM_EMAIL = 'noreply@cacdsoluciones.com'
+DEFAULT_FROM_EMAIL = 'notificaciones@cacdsoluciones.com'
 NOTIFICACIONES_EMAIL_TECNICO = []
 
 SEGUIMIENTO_URL = 'http://localhost:8000'
