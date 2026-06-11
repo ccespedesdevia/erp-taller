@@ -12,6 +12,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('dashboard/', include('dashboard.urls')),
     path('portal/', include('portal.urls')),
+    path('api/equipos/', include('equipos.urls')),
 ]
 
 if settings.DEBUG:
