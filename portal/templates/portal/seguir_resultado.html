@@ -1,0 +1,99 @@
+{% extends "portal/base_portal.html" %}
+{% block title %}Ticket {{ orden.codigo_seguimiento }}{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center mt-4">
+    <div class="col-md-10">
+        <div class="card shadow mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h4 class="mb-0">Ticket {{ orden.codigo_seguimiento }}</h4>
+                <span class="badge fs-6 bg-{% if orden.estado == 'pendiente' %}warning{% elif orden.estado == 'en_curso' %}info{% elif orden.estado == 'completado' %}success{% else %}secondary{% endif %}">{{ orden.get_estado_display }}</span>
+            </div>
+            <div class="card-body">
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <strong>Empresa:</strong> {{ orden.cliente.razon_social }}
+                    </div>
+                    <div class="col-md-3">
+                        <strong>Ingreso:</strong> {{ orden.fecha_ingreso|date:"d/m/Y" }}
+                    </div>
+                    <div class="col-md-3">
+                        <strong>Técnico:</strong> {{ orden.tecnico|default:"—" }}
+                    </div>
+                </div>
+
+                {% if orden.equipo %}
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <strong>Equipo:</strong> {{ orden.equipo.marca }} {{ orden.equipo.modelo }} <span class="text-muted">({{ orden.equipo.get_tipo_display }})</span>
+                    </div>
+                    {% if orden.equipo.numero_serie %}
+                    <div class="col-md-3">
+                        <strong>Serie:</strong> {{ orden.equipo.numero_serie }}
+                    </div>
+                    {% endif %}
+                </div>
+                {% endif %}
+
+                <div class="mb-3">
+                    <h6>Diagnóstico / Motivo</h6>
+                    <p class="bg-light p-3 rounded">{{ orden.diagnostico|linebreaks|default:"Sin detalle" }}</p>
+                </div>
+
+                {% if orden.trabajo_realizado %}
+                <div class="mb-3">
+                    <h6>Trabajo Realizado</h6>
+                    <p class="bg-light p-3 rounded">{{ orden.trabajo_realizado|linebreaks }}</p>
+                </div>
+                {% endif %}
+
+                {% if orden.software_instalado %}
+                <div class="mb-3">
+                    <h6>Software Instalado / Desinstalado</h6>
+                    <p class="bg-light p-3 rounded">{{ orden.software_instalado|linebreaks }}</p>
+                </div>
+                {% endif %}
+
+                {% if orden.horas_trabajadas %}
+                <div class="mb-3"><strong>Horas trabajadas:</strong> {{ orden.horas_trabajadas }}</div>
+                {% endif %}
+
+                {% if orden.repuestos.all %}
+                <div class="mb-3">
+                    <h6>Repuestos Utilizados</h6>
+                    <table class="table table-sm">
+                        <thead><tr><th>Producto</th><th>Cantidad</th><th>P. Unitario</th></tr></thead>
+                        <tbody>
+                            {% for r in orden.repuestos.all %}
+                            <tr><td>{{ r.producto.nombre }}</td><td>{{ r.cantidad }}</td><td>${{ r.precio_unitario|floatformat:0 }}</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% endif %}
+
+                {% if orden.fotos.all %}
+                <div class="mb-3">
+                    <h6>Fotos</h6>
+                    <div class="row">
+                        {% for f in orden.fotos.all %}
+                        <div class="col-md-3 mb-2">
+                            <img src="{{ f.imagen.url }}" class="img-fluid rounded" alt="{{ f.descripcion|default:'Foto' }}">
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+
+                {% if orden.garantia_fin %}
+                <div class="alert alert-info mb-0">Garantía vigente hasta {{ orden.garantia_fin|date:"d/m/Y" }}</div>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="text-center mt-3">
+            <a href="{% url 'portal_seguir' %}" class="btn btn-outline-secondary">Consultar otro ticket</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,44 @@
+{% extends "portal/base_portal.html" %}
+{% block title %}Seguir Ticket{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center mt-5">
+    <div class="col-md-5">
+        <div class="card shadow">
+            <div class="card-body p-4 text-center">
+                {% if codigo_creado %}
+                <div class="mb-4">
+                    <h4 class="text-success mb-2">¡Ticket creado!</h4>
+                    <p class="text-muted">Tu código de seguimiento es:</p>
+                    <div class="display-5 fw-bold text-primary mb-3" style="letter-spacing:4px;">{{ codigo_creado }}</div>
+                    <p class="text-muted small">Guarda este código para consultar el estado de tu ticket.</p>
+                    <hr>
+                    <p class="mb-0">Ingresa el código para ver el estado:</p>
+                </div>
+                {% else %}
+                <h4 class="mb-1">Seguir Ticket</h4>
+                <p class="text-muted mb-4">Ingresa tu código de seguimiento para ver el estado de tu ticket.</p>
+                {% endif %}
+
+                {% if error %}
+                <div class="alert alert-danger py-2">{{ error }}</div>
+                {% endif %}
+
+                <form method="get">
+                    <div class="mb-3">
+                        <input type="text" name="codigo" class="form-control form-control-lg text-center" placeholder="Ej: TKT-A7X3K2" required style="text-transform:uppercase;font-weight:bold;letter-spacing:2px;">
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100">Consultar estado</button>
+                </form>
+
+                {% if not codigo_creado %}
+                <hr class="my-4">
+                <p class="small text-muted mb-0">
+                    ¿Eres cliente? <a href="{% url 'portal_login' %}">Inicia sesión</a> para crear un nuevo ticket.
+                </p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

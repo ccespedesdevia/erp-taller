@@ -92,8 +92,22 @@ def crear_orden(request):
         for f in request.FILES.getlist('fotos'):
             FotoOrden.objects.create(orden=orden, imagen=f)
 
-        messages.success(request, f'Ticket #{orden.id} creado correctamente.')
-        return redirect('portal_orden_detail', pk=orden.pk)
+        messages.success(request, f'Ticket creado correctamente.')
+        return render(request, 'portal/seguir_form.html', {'codigo_creado': orden.codigo_seguimiento})
 
     equipos = Equipo.objects.filter(cliente=cliente)
     return render(request, 'portal/orden_form.html', {'cliente': cliente, 'equipos': equipos})
+
+
+def seguir_ticket(request):
+    codigo = request.GET.get('codigo', '').strip().upper()
+    if codigo:
+        try:
+            orden = OrdenServicio.objects.get(codigo_seguimiento=codigo)
+            return render(request, 'portal/seguir_resultado.html', {'orden': orden})
+        except OrdenServicio.DoesNotExist:
+            return render(request, 'portal/seguir_form.html', {'error': f'No se encontró ningún ticket con el código {codigo}.'})
+    return render(request, 'portal/seguir_form.html')
+
+
+

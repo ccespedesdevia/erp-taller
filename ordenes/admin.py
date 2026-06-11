@@ -14,7 +14,7 @@ class FotoOrdenInline(admin.TabularInline):
 
 @admin.register(OrdenServicio)
 class OrdenServicioAdmin(admin.ModelAdmin):
-    list_display = ['__str__', 'estado', 'tecnico', 'fecha_ingreso', 'horas_trabajadas', 'garantia_fin']
+    list_display = ['codigo_seguimiento', '__str__', 'estado', 'tecnico', 'fecha_ingreso', 'horas_trabajadas', 'garantia_fin']
     list_filter = ['estado', 'tecnico']
     search_fields = ['cliente__razon_social', 'equipo__numero_serie', 'tecnico']
     inlines = [RepuestoUsadoInline, FotoOrdenInline]

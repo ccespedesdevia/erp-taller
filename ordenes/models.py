@@ -1,11 +1,18 @@
 import datetime
+import secrets
+import string
 from django.db import models
 from clientes.models import Cliente
 from equipos.models import Equipo
 from inventario.models import Producto
 
 
+def generar_codigo():
+    return 'TKT-' + ''.join(secrets.choice(string.ascii_uppercase + string.digits) for _ in range(6))
+
+
 class OrdenServicio(models.Model):
+    codigo_seguimiento = models.CharField('Código de seguimiento', max_length=20, unique=True, blank=True, editable=False)
     ESTADO_CHOICES = [
         ('pendiente', 'Pendiente'), ('en_curso', 'En Curso'),
         ('completado', 'Completado'), ('facturado', 'Facturado'),
@@ -37,6 +44,8 @@ class OrdenServicio(models.Model):
         return f'OS #{self.id} - {self.cliente.razon_social}{equipo_str}'
 
     def save(self, *args, **kwargs):
+        if not self.codigo_seguimiento:
+            self.codigo_seguimiento = generar_codigo()
         if self.estado == 'completado' and not self.garantia_fin:
             self.garantia_fin = datetime.date.today() + datetime.timedelta(days=90)
         if self.estado == 'en_curso' and not self.fecha_inicio:

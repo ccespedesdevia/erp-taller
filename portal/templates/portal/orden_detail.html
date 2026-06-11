@@ -11,10 +11,15 @@
 
 <div class="card shadow mb-4">
     <div class="card-header d-flex justify-content-between align-items-center">
-        <h4 class="mb-0">Ticket #{{ orden.id }} — {{ orden.get_estado_display }}</h4>
+        <h4 class="mb-0">Ticket #{{ orden.id }}</h4>
         <span class="badge fs-6 bg-{% if orden.estado == 'pendiente' %}warning{% elif orden.estado == 'en_curso' %}info{% elif orden.estado == 'completado' %}success{% else %}secondary{% endif %}">{{ orden.get_estado_display }}</span>
     </div>
     <div class="card-body">
+        <div class="alert alert-success text-center py-3">
+            <strong>Código de seguimiento:</strong>
+            <span style="font-size:1.5rem;font-weight:bold;letter-spacing:3px;">{{ orden.codigo_seguimiento }}</span>
+            <br><small>Comparte este código para que el cliente consulte el estado del ticket sin necesidad de usuario.</small>
+        </div>
         <div class="row mb-3">
             <div class="col-md-6">
                 <strong>Equipo:</strong> {{ orden.equipo|default:"No especificado" }}
