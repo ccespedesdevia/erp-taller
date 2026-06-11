@@ -72,12 +72,15 @@ def crear_orden(request):
         nombre_contacto = request.POST.get('nombre_contacto', '').strip()
         telefono = request.POST.get('telefono', '').strip()
         email = request.POST.get('email', '').strip()
-        contacto_info = f'Contacto: {nombre_contacto}'
-        if telefono:
-            contacto_info += f' | Tel: {telefono}'
-        if email:
-            contacto_info += f' | Email: {email}'
-        diagnostico_completo = f'{contacto_info}\n\n{diagnostico}'
+        sucursal = request.POST.get('sucursal', '').strip()
+        centro_costo = request.POST.get('centro_costo', '').strip()
+
+        encabezado = f'Contacto: {nombre_contacto} | Tel: {telefono} | Email: {email}'
+        if sucursal:
+            encabezado += f'\nSucursal: {sucursal}'
+        if centro_costo:
+            encabezado += f'\nCentro de Costo: {centro_costo}'
+        diagnostico_completo = f'{encabezado}\n\n---\n\n{diagnostico}'
 
         orden = OrdenServicio.objects.create(
             cliente=cliente,
