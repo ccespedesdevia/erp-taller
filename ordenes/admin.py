@@ -14,13 +14,25 @@ class FotoOrdenInline(admin.TabularInline):
 
 class ComentarioInline(admin.TabularInline):
     model = ComentarioTicket
-    extra = 0
-    readonly_fields = ['autor', 'texto', 'created_at']
-    can_delete = False
-    fields = ['autor', 'texto', 'created_at']
+    extra = 1
+    fields = ['autor', 'texto']
+    verbose_name = 'Responder al cliente'
+    verbose_name_plural = 'Conversación'
 
-    def has_add_permission(self, request, obj=None):
-        return False
+    def get_formset(self, request, obj=None, **kwargs):
+        Formset = super().get_formset(request, obj, **kwargs)
+
+        class ComentarioFormset(Formset):
+            def save_new(self, form, commit=True):
+                obj = form.save(commit=False)
+                obj.es_tecnico = True
+                if not obj.autor:
+                    obj.autor = request.user.get_full_name() or request.user.username
+                if commit:
+                    obj.save()
+                return obj
+
+        return ComentarioFormset
 
 
 @admin.register(OrdenServicio)
