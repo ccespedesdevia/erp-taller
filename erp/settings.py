@@ -76,3 +76,9 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 LOGIN_URL = '/admin/login/'
 LOGIN_REDIRECT_URL = '/admin/'
+
+# Email / Notificaciones
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+DEFAULT_FROM_EMAIL = 'noreply@cacdsoluciones.com'
+NOTIFICACIONES_EMAIL_TECNICO = []
+SEGUIMIENTO_URL = 'http://localhost:8000'

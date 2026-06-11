@@ -1,0 +1,13 @@
+🔔 {{ tipo }}
+
+Ticket: {{ orden.codigo_seguimiento }}
+{% if not cliente %}Hola,{% endif %}
+
+Tu ticket {{ orden.codigo_seguimiento }} tiene novedades.
+
+{{ mensaje_extra|default:"" }}
+
+Puedes revisar el detalle completo aquí:
+{{ seguimiento_url }}
+
+— CACD Soluciones

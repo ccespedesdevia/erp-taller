@@ -1,33 +1,27 @@
-from django.db.models.signals import pre_save, post_save, post_delete
+from django.db.models.signals import post_save
 from django.dispatch import receiver
-from .models import RepuestoUsado
-from inventario.models import MovimientoStock
+from .models import OrdenServicio, ComentarioTicket
+from .notificaciones import notificar_tecnico, notificar_cliente
 
 
-@receiver(pre_save, sender=RepuestoUsado)
-def track_old_quantity(sender, instance, **kwargs):
-    if instance.pk:
-        instance._old_quantity = RepuestoUsado.objects.get(pk=instance.pk).cantidad
+@receiver(post_save, sender=OrdenServicio)
+def orden_modificada(sender, instance, created, **kwargs):
+    if created:
+        notificar_tecnico(instance, 'Nuevo ticket creado')
+        notificar_cliente(instance, 'Ticket creado',
+                          'Tu solicitud de servicio fue recibida. Pronto te contactaremos.')
     else:
-        instance._old_quantity = 0
+        notificar_tecnico(instance, 'Ticket actualizado')
+        notificar_cliente(instance, 'Ticket actualizado',
+                          'Tu ticket fue actualizado por el técnico. Ingresa para ver los cambios.')
 
 
-@receiver(post_save, sender=RepuestoUsado)
-def descontar_stock(sender, instance, **kwargs):
-    old_qty = getattr(instance, '_old_quantity', 0)
-    delta = instance.cantidad - old_qty
-    if delta != 0:
-        instance.producto.stock_actual -= delta
-        instance.producto.save(update_fields=['stock_actual'])
-        MovimientoStock.objects.create(
-            producto=instance.producto,
-            tipo='salida',
-            cantidad=abs(delta),
-            referencia=f'OS #{instance.orden.id}',
-        )
-
-
-@receiver(post_delete, sender=RepuestoUsado)
-def reponer_stock(sender, instance, **kwargs):
-    instance.producto.stock_actual += instance.cantidad
-    instance.producto.save(update_fields=['stock_actual'])
+@receiver(post_save, sender=ComentarioTicket)
+def comentario_creado(sender, instance, created, **kwargs):
+    if not created:
+        return
+    if instance.es_tecnico:
+        notificar_cliente(instance.orden, 'Nueva respuesta del técnico',
+                          f'{instance.autor} respondió: {instance.texto}')
+    else:
+        notificar_tecnico(instance.orden, 'Nuevo comentario del cliente', comentario=instance)
