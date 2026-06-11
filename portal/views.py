@@ -70,7 +70,14 @@ def crear_orden(request):
                 )
 
         nombre_contacto = request.POST.get('nombre_contacto', '').strip()
-        diagnostico_completo = f'Contacto: {nombre_contacto}\n\n{diagnostico}' if nombre_contacto else diagnostico
+        telefono = request.POST.get('telefono', '').strip()
+        email = request.POST.get('email', '').strip()
+        contacto_info = f'Contacto: {nombre_contacto}'
+        if telefono:
+            contacto_info += f' | Tel: {telefono}'
+        if email:
+            contacto_info += f' | Email: {email}'
+        diagnostico_completo = f'{contacto_info}\n\n{diagnostico}'
 
         orden = OrdenServicio.objects.create(
             cliente=cliente,

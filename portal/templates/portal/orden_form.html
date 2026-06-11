@@ -7,9 +7,19 @@
     <div class="card-body">
         <form method="post" enctype="multipart/form-data">
             {% csrf_token %}
-            <div class="mb-3">
-                <label class="form-label">Tu nombre (contacto) *</label>
-                <input type="text" name="nombre_contacto" class="form-control" required placeholder="Ej: María González">
+            <div class="row">
+                <div class="col-md-4 mb-3">
+                    <label class="form-label">Tu nombre (contacto) *</label>
+                    <input type="text" name="nombre_contacto" class="form-control" required placeholder="Ej: María González">
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label class="form-label">Teléfono *</label>
+                    <input type="tel" name="telefono" class="form-control" required placeholder="Ej: +56 9 1234 5678">
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label class="form-label">Email *</label>
+                    <input type="email" name="email" class="form-control" required placeholder="Ej: maria@ejemplo.cl">
+                </div>
             </div>
 
             <hr>
