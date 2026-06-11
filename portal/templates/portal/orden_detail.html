@@ -55,19 +55,25 @@
         <div class="mb-3"><strong>Horas trabajadas:</strong> {{ orden.horas_trabajadas }}</div>
         {% endif %}
 
-        {% if orden.repuestos.all %}
+        {% with items=orden.repuestos.all %}
+        {% if items %}
         <div class="mb-3">
-            <h6>Repuestos Utilizados</h6>
-            <table class="table table-sm">
-                <thead><tr><th>Producto</th><th>Cantidad</th><th>P. Unitario</th></tr></thead>
+            <h6>Detalle del cobro</h6>
+            <table class="table table-sm table-bordered">
+                <thead><tr><th>Producto/Servicio</th><th>Cant.</th><th>Valor neto</th><th>Total neto</th></tr></thead>
                 <tbody>
-                    {% for r in orden.repuestos.all %}
-                    <tr><td>{{ r.producto.nombre }}</td><td>{{ r.cantidad }}</td><td>${{ r.precio_unitario|floatformat:0 }}</td></tr>
+                    {% for r in items %}
+                    <tr><td>{{ r.producto.nombre }}</td><td>{{ r.cantidad }}</td><td>${{ r.precio_unitario|floatformat:0 }}</td><td class="text-end">${{ r.total_neto|floatformat:0 }}</td></tr>
                     {% endfor %}
+                    <tr class="table-secondary fw-bold">
+                        <td colspan="3" class="text-end">Total neto (sin IVA):</td>
+                        <td class="text-end">${{ orden.total_neto|floatformat:0 }}</td>
+                    </tr>
                 </tbody>
             </table>
         </div>
         {% endif %}
+        {% endwith %}
 
         {% if orden.fotos.all %}
         <div class="mb-3">

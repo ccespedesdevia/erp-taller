@@ -39,6 +39,9 @@ class OrdenServicio(models.Model):
         verbose_name_plural = 'Órdenes de Servicio'
         ordering = ['-fecha_ingreso']
 
+    def total_neto(self):
+        return sum(r.total_neto() for r in self.repuestos.all())
+
     def __str__(self):
         equipo_str = f' - {self.equipo}' if self.equipo else ''
         return f'OS #{self.id} - {self.cliente.razon_social}{equipo_str}'
@@ -57,16 +60,19 @@ class OrdenServicio(models.Model):
 
 class RepuestoUsado(models.Model):
     orden = models.ForeignKey(OrdenServicio, on_delete=models.CASCADE, related_name='repuestos', verbose_name='Orden')
-    producto = models.ForeignKey(Producto, on_delete=models.PROTECT, verbose_name='Producto')
+    producto = models.ForeignKey(Producto, on_delete=models.PROTECT, verbose_name='Producto/Servicio')
     cantidad = models.IntegerField('Cantidad', default=1)
-    precio_unitario = models.DecimalField('Precio unitario', max_digits=10, decimal_places=2)
+    precio_unitario = models.DecimalField('Valor unitario neto', max_digits=10, decimal_places=2, help_text='Sin IVA')
 
     class Meta:
-        verbose_name = 'Repuesto usado'
-        verbose_name_plural = 'Repuestos usados'
+        verbose_name = 'Ítem de cobro'
+        verbose_name_plural = 'Detalle del cobro'
 
     def __str__(self):
         return f'{self.cantidad}x {self.producto.nombre}'
+
+    def total_neto(self):
+        return self.cantidad * self.precio_unitario
 
 
 class FotoOrden(models.Model):
