@@ -37,7 +37,7 @@ class ComentarioInline(admin.TabularInline):
 
 @admin.register(OrdenServicio)
 class OrdenServicioAdmin(admin.ModelAdmin):
-    list_display = ['codigo_seguimiento', '__str__', 'estado', 'tecnico', 'fecha_ingreso', 'horas_trabajadas', 'garantia_fin']
+    list_display = ['codigo_seguimiento', '__str__', 'estado', 'tecnico', 'oc_aprobada', 'fecha_ingreso', 'horas_trabajadas', 'garantia_fin']
     list_filter = ['estado', 'tecnico']
     search_fields = ['cliente__razon_social', 'equipo__numero_serie', 'tecnico']
     inlines = [RepuestoUsadoInline, FotoOrdenInline, ComentarioInline]
@@ -47,7 +47,7 @@ class OrdenServicioAdmin(admin.ModelAdmin):
         ('Fechas', {'fields': ['fecha_ingreso', 'fecha_inicio', 'fecha_termino', 'fecha_entrega']}),
         ('Trabajo', {'fields': ['motivo', 'diagnostico', 'trabajo_realizado', 'software_instalado']}),
         ('Horas y Garantía', {'fields': ['horas_trabajadas', 'estado', 'garantia_fin']}),
-        ('Documentos', {'fields': ['orden_compra_cliente', 'orden_compra_archivo']}),
+        ('Documentos', {'fields': ['orden_compra_cliente', 'orden_compra_archivo', 'oc_aprobada']}),
         ('Interno', {'fields': ['notas_internas']}),
     )
     readonly_fields = ['fecha_ingreso']

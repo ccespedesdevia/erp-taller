@@ -56,9 +56,48 @@
         {% if orden.orden_compra_archivo %}
         <a href="{{ orden.orden_compra_archivo.url }}" target="_blank" class="btn btn-sm btn-outline-primary ms-2">Ver documento</a>
         {% endif %}
+        <span class="badge bg-{% if orden.oc_aprobada %}success{% else %}warning{% endif %} ms-2">{% if orden.oc_aprobada %}✅ Aprobada{% else %}⏳ Pendiente{% endif %}</span>
         {% endif %}
     </div>
 </div>
+
+<!-- OC Card: always show if ticket is pendiente/en_curso, for client to add OC -->
+{% if orden.estado == 'pendiente' or orden.estado == 'en_curso' %}
+<div class="card shadow-sm mb-3 border-primary">
+    <div class="card-header bg-primary bg-opacity-10 text-primary fw-bold">
+        {% if orden.orden_compra_cliente %}Actualizar Orden de Compra{% else %}Ingresar Orden de Compra{% endif %}
+    </div>
+    <div class="card-body">
+        {% if orden.orden_compra_cliente %}
+        <div class="mb-2">
+            <small class="text-muted">OC actual:</small>
+            <strong>{{ orden.orden_compra_cliente }}</strong>
+            <span class="badge bg-{% if orden.oc_aprobada %}success{% else %}warning{% endif %} ms-2">
+                {% if orden.oc_aprobada %}✅ Aprobada{% else %}⏳ Pendiente{% endif %}
+            </span>
+            {% if orden.orden_compra_archivo %}
+            <a href="{{ orden.orden_compra_archivo.url }}" target="_blank" class="btn btn-sm btn-outline-primary ms-2">Ver documento</a>
+            {% endif %}
+        </div>
+        {% endif %}
+        {% if not orden.oc_aprobada %}
+        <form method="post" action="{% url 'portal_subir_oc' orden.pk %}" enctype="multipart/form-data" class="row g-2">
+            {% csrf_token %}
+            <div class="col-md-6">
+                <input type="text" name="orden_compra_cliente" class="form-control form-control-sm" placeholder="N° de orden de compra" value="{{ orden.orden_compra_cliente }}">
+            </div>
+            <div class="col-md-4">
+                <input type="file" name="orden_compra_archivo" class="form-control form-control-sm" accept=".pdf,.png,.jpg,.jpeg">
+            </div>
+            <div class="col-md-2">
+                <button class="btn btn-primary btn-sm w-100">Guardar OC</button>
+            </div>
+        </form>
+        <div class="form-text mt-1">Sube el documento de la orden de compra (PDF o imagen) para que el técnico lo revise.</div>
+        {% endif %}
+    </div>
+</div>
+{% endif %}
 
 <!-- Motivo -->
 {% if orden.motivo %}

@@ -52,6 +52,7 @@
                 {% if orden.orden_compra_archivo %}
                 <a href="{{ orden.orden_compra_archivo.url }}" target="_blank" class="btn btn-sm btn-outline-primary ms-2">Ver documento</a>
                 {% endif %}
+                <span class="badge bg-{% if orden.oc_aprobada %}success{% else %}warning{% endif %} ms-2">{% if orden.oc_aprobada %}✅ Aprobada{% else %}⏳ Pendiente{% endif %}</span>
                 {% endif %}
             </div>
         </div>

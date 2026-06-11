@@ -39,6 +39,7 @@ class OrdenServicio(models.Model):
     centro_costo = models.CharField('Centro de costo', max_length=200, blank=True)
     orden_compra_cliente = models.CharField('Orden de compra', max_length=100, blank=True, help_text='N° de OC del cliente')
     orden_compra_archivo = models.FileField('Documento OC', upload_to='ordenes_oc/', blank=True, null=True)
+    oc_aprobada = models.BooleanField('OC aprobada', default=False)
     created_at = models.DateTimeField('Creado', auto_now_add=True)
     updated_at = models.DateTimeField('Actualizado', auto_now=True)
 

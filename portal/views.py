@@ -108,6 +108,35 @@ def seguir_ticket(request):
     return render(request, 'portal/seguir_form.html')
 
 
+@login_required
+def subir_oc(request, pk):
+    try:
+        cliente = request.user.cliente
+    except Cliente.DoesNotExist:
+        return render(request, 'portal/error.html', {'mensaje': 'Usuario no vinculado.'})
+
+    orden = get_object_or_404(OrdenServicio, pk=pk, cliente=cliente)
+    if orden.estado not in ('pendiente', 'en_curso'):
+        messages.error(request, 'No puedes modificar la OC en este estado.')
+        return redirect('portal_orden_detail', pk=pk)
+
+    if request.method == 'POST':
+        oc_numero = request.POST.get('orden_compra_cliente', '').strip()
+        oc_archivo = request.FILES.get('orden_compra_archivo')
+        if oc_numero:
+            orden.orden_compra_cliente = oc_numero
+        if oc_archivo:
+            orden.orden_compra_archivo = oc_archivo
+        if oc_numero or oc_archivo:
+            orden.oc_aprobada = False
+            orden.save()
+            messages.success(request, 'Orden de compra registrada. El técnico la revisará.')
+        else:
+            messages.error(request, 'Ingresa al menos el número de OC.')
+
+    return redirect('portal_orden_detail', pk=pk)
+
+
 def ticket_pdf(request, pk):
     orden = get_object_or_404(OrdenServicio, pk=pk)
     return render(request, 'portal/ticket_pdf.html', {'orden': orden})
