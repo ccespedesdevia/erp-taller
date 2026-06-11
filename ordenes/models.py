@@ -78,3 +78,19 @@ class FotoOrden(models.Model):
     class Meta:
         verbose_name = 'Foto'
         verbose_name_plural = 'Fotos'
+
+
+class ComentarioTicket(models.Model):
+    orden = models.ForeignKey(OrdenServicio, on_delete=models.CASCADE, related_name='comentarios', verbose_name='Orden')
+    autor = models.CharField('Autor', max_length=100)
+    texto = models.TextField('Mensaje')
+    es_tecnico = models.BooleanField('Es del técnico', default=False)
+    created_at = models.DateTimeField('Fecha', auto_now_add=True)
+
+    class Meta:
+        verbose_name = 'Comentario'
+        verbose_name_plural = 'Comentarios'
+        ordering = ['created_at']
+
+    def __str__(self):
+        return f'{self.autor}: {self.texto[:50]}'

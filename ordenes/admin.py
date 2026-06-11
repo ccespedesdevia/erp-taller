@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import OrdenServicio, RepuestoUsado, FotoOrden
+from .models import OrdenServicio, RepuestoUsado, FotoOrden, ComentarioTicket
 
 
 class RepuestoUsadoInline(admin.TabularInline):
@@ -12,12 +12,23 @@ class FotoOrdenInline(admin.TabularInline):
     extra = 1
 
 
+class ComentarioInline(admin.TabularInline):
+    model = ComentarioTicket
+    extra = 0
+    readonly_fields = ['autor', 'texto', 'created_at']
+    can_delete = False
+    fields = ['autor', 'texto', 'created_at']
+
+    def has_add_permission(self, request, obj=None):
+        return False
+
+
 @admin.register(OrdenServicio)
 class OrdenServicioAdmin(admin.ModelAdmin):
     list_display = ['codigo_seguimiento', '__str__', 'estado', 'tecnico', 'fecha_ingreso', 'horas_trabajadas', 'garantia_fin']
     list_filter = ['estado', 'tecnico']
     search_fields = ['cliente__razon_social', 'equipo__numero_serie', 'tecnico']
-    inlines = [RepuestoUsadoInline, FotoOrdenInline]
+    inlines = [RepuestoUsadoInline, FotoOrdenInline, ComentarioInline]
     fieldsets = (
         ('Cliente y Equipo', {'fields': ['cliente', 'equipo', 'tecnico']}),
         ('Fechas', {'fields': ['fecha_ingreso', 'fecha_inicio', 'fecha_termino', 'fecha_entrega']}),

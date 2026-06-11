@@ -3,7 +3,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from clientes.models import Cliente
-from ordenes.models import OrdenServicio, FotoOrden
+from ordenes.models import OrdenServicio, FotoOrden, ComentarioTicket
 from equipos.models import Equipo
 
 
@@ -108,6 +108,31 @@ def seguir_ticket(request):
         except OrdenServicio.DoesNotExist:
             return render(request, 'portal/seguir_form.html', {'error': f'No se encontró ningún ticket con el código {codigo}.'})
     return render(request, 'portal/seguir_form.html')
+
+
+def comentar_ticket(request, pk):
+    texto = request.POST.get('texto', '').strip()
+    if not texto:
+        messages.error(request, 'Escribe un mensaje.')
+    else:
+        orden = get_object_or_404(OrdenServicio, pk=pk)
+        autor = 'Anónimo'
+        es_tecnico = False
+        if request.user.is_authenticated:
+            try:
+                cliente = request.user.cliente
+                autor = cliente.razon_social[:100]
+            except Cliente.DoesNotExist:
+                autor = request.user.get_full_name() or request.user.username
+                es_tecnico = True
+        else:
+            autor_nombre = request.POST.get('autor', '').strip()
+            if autor_nombre:
+                autor = autor_nombre
+        ComentarioTicket.objects.create(orden=orden, autor=autor, texto=texto, es_tecnico=es_tecnico)
+        messages.success(request, 'Comentario agregado.')
+    referer = request.META.get('HTTP_REFERER', '/')
+    return redirect(referer)
 
 
 

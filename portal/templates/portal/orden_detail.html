@@ -85,6 +85,33 @@
         {% if orden.garantia_fin %}
         <div class="alert alert-info">Garantía vigente hasta {{ orden.garantia_fin|date:"d/m/Y" }}</div>
         {% endif %}
+
+        {% with comentarios=orden.comentarios.all %}
+        <div class="mt-4">
+            <h6>Conversación</h6>
+            <div class="bg-light p-3 rounded" style="max-height:300px;overflow-y:auto;">
+                {% for c in comentarios %}
+                <div class="mb-2 {% if c.es_tecnico %}text-end{% endif %}">
+                    <small class="text-muted">{{ c.autor }} · {{ c.created_at|date:"d/m H:i" }}</small>
+                    <div class="p-2 rounded d-inline-block {% if c.es_tecnico %}bg-primary text-white{% else %}bg-white border{% endif %}" style="max-width:80%;">
+                        {{ c.texto|linebreaks }}
+                    </div>
+                </div>
+                {% empty %}
+                <p class="text-muted mb-0">Sin comentarios aún.</p>
+                {% endfor %}
+            </div>
+
+            <form method="post" action="{% url 'portal_comentar' orden.pk %}" class="mt-2">
+                {% csrf_token %}
+                <input type="hidden" name="autor" value="{{ user.cliente.razon_social }}">
+                <div class="input-group">
+                    <input type="text" name="texto" class="form-control" placeholder="Escribe un mensaje..." required>
+                    <button class="btn btn-primary btn-sm">Enviar</button>
+                </div>
+            </form>
+        </div>
+        {% endwith %}
     </div>
 </div>
 

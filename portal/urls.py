@@ -9,4 +9,5 @@ urlpatterns = [
     path('ordenes/crear/', views.crear_orden, name='portal_crear_orden'),
     path('ordenes/<int:pk>/', views.orden_detail, name='portal_orden_detail'),
     path('seguir/', views.seguir_ticket, name='portal_seguir'),
+    path('comentar/<int:pk>/', views.comentar_ticket, name='portal_comentar'),
 ]
