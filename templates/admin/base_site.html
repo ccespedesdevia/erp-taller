@@ -42,6 +42,7 @@
 {% block branding %}
 <div style="display:flex;align-items:center;justify-content:space-between;">
     <h1 id="site-name"><a href="{% url 'home' %}" style="color:white;text-decoration:none;">CACD <span style="color:#d97706;">Soluciones</span></a></h1>
-    <a href="{% url 'home' %}" style="color:#ccc;font-size:13px;text-decoration:none;">← Volver al inicio</a>
+    <a href="{% url 'dashboard' %}" style="color:#d97706;font-size:13px;text-decoration:none;font-weight:600;">📊 Dashboard</a>
+    <a href="{% url 'home' %}" style="color:#ccc;font-size:13px;text-decoration:none;margin-left:10px;">← Volver al inicio</a>
 </div>
 {% endblock %}

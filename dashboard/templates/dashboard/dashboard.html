@@ -1,71 +1,128 @@
 {% extends "admin/base_site.html" %}
 {% load static %}
 
-{% block title %}Dashboard {{ block.super }}{% endblock %}
+{% block title %}Dashboard{% endblock %}
 
 {% block branding %}
-<h1 id="site-name">ERP Taller Informático</h1>
+<h1 id="site-name" style="font-family:'Roboto',sans-serif; font-weight:700; color:#d97706;">
+  ⚡ CACD Soluciones — Dashboard
+</h1>
 {% endblock %}
 
 {% block content %}
-<div style="display: flex; gap: 20px; flex-wrap: wrap; margin-bottom: 30px;">
-    <div style="flex: 1; min-width: 150px; background: #417690; color: white; padding: 20px; border-radius: 8px; text-align: center;">
-        <h3 style="margin:0; font-size: 2em;">{{ ordenes_mes }}</h3>
-        <p style="margin:5px 0 0; opacity:0.9;">Órdenes este mes</p>
-    </div>
-    <div style="flex: 1; min-width: 150px; background: #28a745; color: white; padding: 20px; border-radius: 8px; text-align: center;">
-        <h3 style="margin:0; font-size: 2em;">{{ completadas_mes }}</h3>
-        <p style="margin:5px 0 0; opacity:0.9;">Completadas</p>
-    </div>
-    <div style="flex: 1; min-width: 150px; background: #17a2b8; color: white; padding: 20px; border-radius: 8px; text-align: center;">
-        <h3 style="margin:0; font-size: 2em;">{{ horas_mes }}</h3>
-        <p style="margin:5px 0 0; opacity:0.9;">Horas trabajadas</p>
-    </div>
-    <div style="flex: 1; min-width: 150px; background: #ffc107; color: #333; padding: 20px; border-radius: 8px; text-align: center;">
-        <h3 style="margin:0; font-size: 2em;">{{ pendientes }}</h3>
-        <p style="margin:5px 0 0; opacity:0.9;">Pendientes</p>
-    </div>
+<style>
+  .card-dash { background: white; border-radius: 10px; padding: 20px; box-shadow: 0 1px 4px rgba(0,0,0,.08); border-top: 3px solid #d97706; }
+  .card-dash h3 { margin: 0 0 4px; font-size: .8rem; text-transform: uppercase; letter-spacing: .5px; color: #64748b; }
+  .card-dash .valor { font-size: 2rem; font-weight: 700; color: #0f172a; }
+  .card-dash .sub { font-size: .8rem; color: #94a3b8; }
+  .badge-estado { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: .75rem; font-weight: 600; }
+  .badge-pendiente { background: #fef3c7; color: #92400e; }
+  .badge-en_curso { background: #dbeafe; color: #1e40af; }
+  .badge-completado { background: #d1fae5; color: #065f46; }
+  .badge-facturado { background: #e0e7ff; color: #3730a3; }
+  table.dash-table { width: 100%; border-collapse: collapse; font-size: .9rem; }
+  table.dash-table th { text-align: left; padding: 10px 8px; border-bottom: 2px solid #e2e8f0; color: #64748b; font-weight: 600; font-size: .75rem; text-transform: uppercase; letter-spacing: .5px; }
+  table.dash-table td { padding: 10px 8px; border-bottom: 1px solid #f1f5f9; }
+  table.dash-table tr:hover td { background: #f8fafc; }
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
+  @media (max-width: 768px) { .grid-4 { grid-template-columns: repeat(2, 1fr); } .grid-2 { grid-template-columns: 1fr; } }
+</style>
+
+<div style="margin-bottom: 24px;">
+  <h2 style="margin:0 0 4px; color:#0f172a;">Panel de Control</h2>
+  <p style="margin:0; color:#64748b;">{{ hoy|date:"l, d F Y" }}</p>
 </div>
 
-<div style="display: flex; gap: 20px; flex-wrap: wrap;">
-    <div style="flex: 2; min-width: 300px; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,.1);">
-        <h2>Últimas órdenes</h2>
-        <table style="width:100%; border-collapse: collapse;">
-            <tr style="border-bottom: 2px solid #eee;">
-                <th style="text-align:left; padding:8px;">#</th>
-                <th style="text-align:left; padding:8px;">Cliente</th>
-                <th style="text-align:left; padding:8px;">Estado</th>
-                <th style="text-align:left; padding:8px;">Ingreso</th>
-            </tr>
-            {% for o in ultimas_ordenes %}
-            <tr style="border-bottom: 1px solid #eee;">
-                <td style="padding:8px;"><a href="{% url 'admin:ordenes_ordenservicio_change' o.id %}">#{{ o.id }}</a></td>
-                <td style="padding:8px;">{{ o.cliente.razon_social }}</td>
-                <td style="padding:8px;">{{ o.get_estado_display }}</td>
-                <td style="padding:8px;">{{ o.fecha_ingreso }}</td>
-            </tr>
-            {% empty %}
-            <tr><td colspan="4" style="padding:8px;">Sin órdenes aún</td></tr>
-            {% endfor %}
-        </table>
+<!-- KPIs -->
+<div class="grid-4" style="margin-bottom: 24px;">
+  <div class="card-dash" style="border-top-color: #d97706;">
+    <h3>Abiertos</h3>
+    <div class="valor">{{ total_abiertos }}</div>
+    <div class="sub">{{ pendientes }} pendientes · {{ en_curso }} en curso</div>
+  </div>
+  <div class="card-dash" style="border-top-color: #0ea5e9;">
+    <h3>Este Mes</h3>
+    <div class="valor">{{ ordenes_mes }}</div>
+    <div class="sub">{{ completadas_mes }} completadas · {{ facturadas_mes }} facturadas</div>
+  </div>
+  <div class="card-dash" style="border-top-color: #10b981;">
+    <h3>Tiempo Promedio</h3>
+    <div class="valor">{{ promedio_dias }} días</div>
+    <div class="sub">desde ingreso a término</div>
+  </div>
+  <div class="card-dash" style="border-top-color: #f59e0b;">
+    <h3>Nuevos (7 días)</h3>
+    <div class="valor">{{ nuevos_semana }}</div>
+    <div class="sub">{{ horas_mes }} horas trabajadas en el mes</div>
+  </div>
+</div>
+
+<div class="grid-2" style="margin-bottom: 24px;">
+  <!-- Tickets recientes -->
+  <div class="card-dash">
+    <h3>Últimos Tickets</h3>
+    <table class="dash-table">
+      <thead>
+        <tr>
+          <th>Código</th>
+          <th>Cliente</th>
+          <th>Estado</th>
+          <th>Técnico</th>
+          <th>Ingreso</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for o in ultimas_ordenes %}
+        <tr>
+          <td><a href="{% url 'admin:ordenes_ordenservicio_change' o.id %}" style="font-weight:600; color:#d97706; text-decoration:none;">{{ o.codigo_seguimiento }}</a></td>
+          <td>{{ o.cliente.razon_social|truncatechars:25 }}</td>
+          <td><span class="badge-estado badge-{{ o.estado }}">{{ o.get_estado_display }}</span></td>
+          <td>{{ o.tecnico|default:"—" }}</td>
+          <td style="color:#64748b;">{{ o.fecha_ingreso|date:"d/m" }}</td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="5" style="padding:20px; text-align:center; color:#94a3b8;">Sin tickets aún</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    <p style="margin: 12px 0 0;"><a href="{% url 'admin:ordenes_ordenservicio_changelist' %}" style="color:#d97706; text-decoration:none; font-weight:600;">Ver todos →</a></p>
+  </div>
+
+  <!-- Tickets por técnico + alertas -->
+  <div>
+    <div class="card-dash" style="margin-bottom: 20px;">
+      <h3>Tickets por Técnico</h3>
+      {% if tecnicos %}
+      {% for t in tecnicos %}
+      <div style="display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid #f1f5f9;">
+        <span style="font-weight:500;">{{ t.tecnico }}</span>
+        <span style="font-weight:700; color:#d97706;">{{ t.abiertos }} abiertos</span>
+      </div>
+      {% endfor %}
+      {% else %}
+      <p style="color:#94a3b8; margin:0;">Sin técnicos asignados</p>
+      {% endif %}
     </div>
-    <div style="flex: 1; min-width: 200px; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,.1);">
-        <h2>Alertas</h2>
-        <ul style="list-style:none; padding:0;">
-            <li style="padding:8px 0; border-bottom:1px solid #eee;">
-                🔔 Cotizaciones pendientes: <strong>{{ cotizaciones_pendientes }}</strong>
-            </li>
-            <li style="padding:8px 0; border-bottom:1px solid #eee;">
-                ⚠️ Stock bajo: <strong>{{ stock_bajo }} productos</strong>
-            </li>
-            <li style="padding:8px 0; border-bottom:1px solid #eee;">
-                📅 Garantías por vencer (30 días): <strong>{{ garantias_proximas }}</strong>
-            </li>
-            <li style="padding:8px 0;">
-                🔧 Órdenes en curso: <strong>{{ en_curso }}</strong>
-            </li>
-        </ul>
-        <p style="margin-top:20px;"><a href="{% url 'admin:index' %}" style="display:block; text-align:center; padding:10px; background:#417690; color:white; text-decoration:none; border-radius:4px;">Ir al Admin</a></p>
+
+    <div class="card-dash">
+      <h3>Alertas</h3>
+      <div style="display:flex; flex-direction:column; gap:8px;">
+        <div style="display:flex; justify-content:space-between; padding:8px; background:#fef3c7; border-radius:6px;">
+          <span>⚠️ Garantías por vencer (30 días)</span>
+          <strong>{{ garantias_proximas }}</strong>
+        </div>
+        <div style="display:flex; justify-content:space-between; padding:8px; background:#fee2e2; border-radius:6px;">
+          <span>📦 Stock bajo</span>
+          <strong>{{ stock_bajo }} productos</strong>
+        </div>
+      </div>
     </div>
+  </div>
+</div>
+
+<div style="display:flex; gap:12px; justify-content:center; margin-top: 20px;">
+  <a href="{% url 'admin:ordenes_ordenservicio_add' %}" style="background:#d97706; color:white; padding:10px 24px; border-radius:6px; text-decoration:none; font-weight:600;">+ Nuevo Ticket</a>
+  <a href="{% url 'admin:index' %}" style="background:#0f172a; color:white; padding:10px 24px; border-radius:6px; text-decoration:none; font-weight:600;">Ir al Admin</a>
 </div>
 {% endblock %}
