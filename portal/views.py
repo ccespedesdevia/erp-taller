@@ -45,8 +45,8 @@ def crear_orden(request):
         return render(request, 'portal/error.html', {'mensaje': 'Usuario no vinculado.'})
 
     if request.method == 'POST':
-        diagnostico = request.POST.get('diagnostico', '').strip()
-        if not diagnostico:
+        motivo_texto = request.POST.get('diagnostico', '').strip()
+        if not motivo_texto:
             messages.error(request, 'Describe el problema que necesitas resolver.')
             equipos = Equipo.objects.filter(cliente=cliente)
             return render(request, 'portal/orden_form.html', {'cliente': cliente, 'equipos': equipos})
@@ -69,23 +69,21 @@ def crear_orden(request):
                     especificaciones=especs,
                 )
 
-        nombre_contacto = request.POST.get('nombre_contacto', '').strip()
+        contacto = request.POST.get('nombre_contacto', '').strip()
         telefono = request.POST.get('telefono', '').strip()
         email = request.POST.get('email', '').strip()
         empresa = request.POST.get('empresa', '').strip()
         centro_costo = request.POST.get('centro_costo', '').strip()
 
-        encabezado = f'Contacto: {nombre_contacto} | Tel: {telefono} | Email: {email}'
-        if empresa:
-            encabezado += f'\nEmpresa: {empresa}'
-        if centro_costo:
-            encabezado += f'\nCentro de Costo: {centro_costo}'
-        diagnostico_completo = f'{encabezado}\n\n---\n\n{diagnostico}'
-
         orden = OrdenServicio.objects.create(
             cliente=cliente,
             equipo=equipo,
-            diagnostico=diagnostico_completo,
+            motivo=motivo_texto,
+            contacto=contacto,
+            telefono=telefono,
+            email_contacto=email,
+            empresa=empresa,
+            centro_costo=centro_costo,
             estado='pendiente',
         )
 
@@ -108,6 +106,11 @@ def seguir_ticket(request):
         except OrdenServicio.DoesNotExist:
             return render(request, 'portal/seguir_form.html', {'error': f'No se encontró ningún ticket con el código {codigo}.'})
     return render(request, 'portal/seguir_form.html')
+
+
+def ticket_pdf(request, pk):
+    orden = get_object_or_404(OrdenServicio, pk=pk)
+    return render(request, 'portal/ticket_pdf.html', {'orden': orden})
 
 
 def comentar_ticket(request, pk):

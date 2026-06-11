@@ -9,22 +9,37 @@
     </ol>
 </nav>
 
-<!-- Código de seguimiento -->
+<!-- Código + PDF -->
 <div class="alert alert-success text-center py-2 d-flex justify-content-between align-items-center">
     <span><strong>Código:</strong> {{ orden.codigo_seguimiento }}</span>
-    <span class="badge fs-6 bg-{% if orden.estado == 'pendiente' %}warning{% elif orden.estado == 'en_curso' %}info{% elif orden.estado == 'completado' %}success{% else %}secondary{% endif %}">{{ orden.get_estado_display }}</span>
+    <div>
+        <a href="{% url 'portal_ticket_pdf' orden.pk %}" class="btn btn-sm btn-outline-danger me-2" target="_blank">📄 Descargar PDF</a>
+        <span class="badge fs-6 bg-{% if orden.estado == 'pendiente' %}warning{% elif orden.estado == 'en_curso' %}info{% elif orden.estado == 'completado' %}success{% else %}secondary{% endif %}">{{ orden.get_estado_display }}</span>
+    </div>
 </div>
 
 <!-- Info general -->
 <div class="card shadow-sm mb-3">
     <div class="card-body">
         <div class="row">
-            <div class="col-md-4 mb-2"><small class="text-muted d-block">Empresa</small><strong>{{ orden.cliente.razon_social }}</strong></div>
-            <div class="col-md-3 mb-2"><small class="text-muted d-block">Ingreso</small><strong>{{ orden.fecha_ingreso|date:"d/m/Y" }}</strong></div>
-            <div class="col-md-3 mb-2"><small class="text-muted d-block">Técnico</small><strong>{{ orden.tecnico|default:"—" }}</strong></div>
-            {% if orden.horas_trabajadas %}
-            <div class="col-md-2 mb-2"><small class="text-muted d-block">Horas</small><strong>{{ orden.horas_trabajadas }}</strong></div>
+            {% if orden.contacto %}
+            <div class="col-md-3 mb-2"><small class="text-muted d-block">Contacto</small><strong>{{ orden.contacto }}</strong></div>
             {% endif %}
+            {% if orden.telefono %}
+            <div class="col-md-3 mb-2"><small class="text-muted d-block">Teléfono</small><strong>{{ orden.telefono }}</strong></div>
+            {% endif %}
+            {% if orden.email_contacto %}
+            <div class="col-md-3 mb-2"><small class="text-muted d-block">Email</small><strong>{{ orden.email_contacto }}</strong></div>
+            {% endif %}
+            <div class="col-md-3 mb-2"><small class="text-muted d-block">Empresa</small><strong>{{ orden.cliente.razon_social }}</strong></div>
+            {% if orden.empresa %}
+            <div class="col-md-3 mb-2"><small class="text-muted d-block">Sucursal</small><strong>{{ orden.empresa }}</strong></div>
+            {% endif %}
+            {% if orden.centro_costo %}
+            <div class="col-md-3 mb-2"><small class="text-muted d-block">Centro de Costo</small><strong>{{ orden.centro_costo }}</strong></div>
+            {% endif %}
+            <div class="col-md-3 mb-2"><small class="text-muted d-block">Fecha ingreso</small><strong>{{ orden.fecha_ingreso|date:"d/m/Y" }}</strong></div>
+            <div class="col-md-3 mb-2"><small class="text-muted d-block">Técnico</small><strong>{{ orden.tecnico|default:"—" }}</strong></div>
         </div>
         {% if orden.equipo %}
         <hr class="my-2">
@@ -33,20 +48,45 @@
         <small class="text-muted ms-2">({{ orden.equipo.get_tipo_display }})</small>
         {% if orden.equipo.numero_serie %}<small class="text-muted ms-3">Serie: {{ orden.equipo.numero_serie }}</small>{% endif %}
         {% endif %}
+        <!-- Orden de compra -->
+        {% if orden.orden_compra_cliente %}
+        <hr class="my-2">
+        <small class="text-muted d-block">Orden de compra</small>
+        <strong>{{ orden.orden_compra_cliente }}</strong>
+        {% if orden.orden_compra_archivo %}
+        <a href="{{ orden.orden_compra_archivo.url }}" target="_blank" class="btn btn-sm btn-outline-primary ms-2">Ver documento</a>
+        {% endif %}
+        {% endif %}
     </div>
 </div>
 
-<!-- Diagnóstico -->
+<!-- Motivo -->
+{% if orden.motivo %}
 <div class="card shadow-sm mb-3">
-    <div class="card-header"><strong>Diagnóstico / Motivo</strong></div>
-    <div class="card-body">{{ orden.diagnostico|linebreaks|default:"Pendiente" }}</div>
+    <div class="card-header"><strong>Motivo del servicio</strong></div>
+    <div class="card-body">{{ orden.motivo|linebreaks }}</div>
 </div>
+{% endif %}
+
+<!-- Diagnóstico -->
+{% if orden.diagnostico %}
+<div class="card shadow-sm mb-3">
+    <div class="card-header"><strong>Diagnóstico / Hallazgos</strong></div>
+    <div class="card-body">{{ orden.diagnostico|linebreaks }}</div>
+</div>
+{% endif %}
 
 <!-- Trabajo realizado -->
 {% if orden.trabajo_realizado %}
 <div class="card shadow-sm mb-3">
     <div class="card-header"><strong>Trabajo Realizado</strong></div>
-    <div class="card-body">{{ orden.trabajo_realizado|linebreaks }}</div>
+    <div class="card-body">
+        {{ orden.trabajo_realizado|linebreaks }}
+        {% if orden.horas_trabajadas %}
+        <hr class="my-1">
+        <small class="text-muted">Horas trabajadas: <strong>{{ orden.horas_trabajadas }}</strong></small>
+        {% endif %}
+    </div>
 </div>
 {% endif %}
 

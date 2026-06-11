@@ -43,9 +43,11 @@ class OrdenServicioAdmin(admin.ModelAdmin):
     inlines = [RepuestoUsadoInline, FotoOrdenInline, ComentarioInline]
     fieldsets = (
         ('Cliente y Equipo', {'fields': ['cliente', 'equipo', 'tecnico']}),
+        ('Contacto', {'fields': ['contacto', 'telefono', 'email_contacto', 'empresa', 'centro_costo']}),
         ('Fechas', {'fields': ['fecha_ingreso', 'fecha_inicio', 'fecha_termino', 'fecha_entrega']}),
-        ('Trabajo', {'fields': ['diagnostico', 'trabajo_realizado', 'software_instalado']}),
+        ('Trabajo', {'fields': ['motivo', 'diagnostico', 'trabajo_realizado', 'software_instalado']}),
         ('Horas y Garantía', {'fields': ['horas_trabajadas', 'estado', 'garantia_fin']}),
+        ('Documentos', {'fields': ['orden_compra_cliente', 'orden_compra_archivo']}),
         ('Interno', {'fields': ['notas_internas']}),
     )
     readonly_fields = ['fecha_ingreso']

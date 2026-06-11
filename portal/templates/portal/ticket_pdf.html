@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Ticket {{ orden.codigo_seguimiento }}</title>
+<style>
+    @page { margin: 1.5cm; }
+    body { font-family: Helvetica, Arial, sans-serif; font-size: 12px; color: #222; line-height: 1.5; }
+    h1 { font-size: 20px; margin: 0 0 4px; }
+    h2 { font-size: 13px; margin: 20px 0 6px; border-bottom: 2px solid #ddd; padding-bottom: 3px; }
+    .header { border-bottom: 3px solid #2563eb; padding-bottom: 10px; margin-bottom: 16px; }
+    .badge { display: inline-block; padding: 3px 10px; border-radius: 12px; font-size: 12px; font-weight: bold; color: #fff; }
+    .badge-pendiente { background: #f59e0b; }
+    .badge-en_curso { background: #3b82f6; }
+    .badge-completado { background: #10b981; }
+    .badge-facturado { background: #6b7280; }
+    .info-grid { display: flex; flex-wrap: wrap; gap: 6px 30px; margin: 10px 0; }
+    .info-item { }
+    .info-item small { color: #888; font-size: 10px; display: block; }
+    .info-item strong { font-size: 13px; }
+    .section { margin-bottom: 14px; }
+    table { width: 100%; border-collapse: collapse; margin-top: 6px; }
+    th, td { border: 1px solid #ccc; padding: 5px 8px; text-align: left; }
+    th { background: #f3f4f6; font-size: 11px; }
+    td { font-size: 12px; }
+    .text-end { text-align: right; }
+    .text-center { text-align: center; }
+    .fw-bold { font-weight: bold; }
+    .footer { margin-top: 30px; font-size: 11px; color: #888; border-top: 1px solid #ddd; padding-top: 8px; }
+    .oc-info { background: #f9fafb; border: 1px solid #e5e7eb; padding: 8px 12px; border-radius: 4px; margin-top: 10px; }
+    @media print {
+        .no-print { display: none; }
+    }
+</style>
+</head>
+<body>
+<button class="no-print" onclick="window.print()" style="margin-bottom:20px;padding:8px 20px;font-size:14px;cursor:pointer;">Imprimir / Guardar PDF</button>
+
+<div class="header">
+    <div style="display:flex;justify-content:space-between;align-items:start;">
+        <div>
+            <h1>Ticket {{ orden.codigo_seguimiento }}</h1>
+            <span class="badge badge-{{ orden.estado }}">{{ orden.get_estado_display }}</span>
+        </div>
+        <div style="text-align:right;font-size:11px;color:#555;">
+            <div>Emitido: {% now "d/m/Y H:i" %}</div>
+        </div>
+    </div>
+    <div class="info-grid">
+        <div class="info-item"><small>Empresa</small><strong>{{ orden.cliente.razon_social }}</strong></div>
+        <div class="info-item"><small>RUT</small><strong>{{ orden.cliente.rut }}</strong></div>
+        {% if orden.contacto %}
+        <div class="info-item"><small>Contacto</small><strong>{{ orden.contacto }}</strong></div>
+        {% endif %}
+        {% if orden.telefono %}
+        <div class="info-item"><small>Teléfono</small><strong>{{ orden.telefono }}</strong></div>
+        {% endif %}
+        {% if orden.email_contacto %}
+        <div class="info-item"><small>Email</small><strong>{{ orden.email_contacto }}</strong></div>
+        {% endif %}
+        {% if orden.empresa %}
+        <div class="info-item"><small>Empresa / Sucursal</small><strong>{{ orden.empresa }}</strong></div>
+        {% endif %}
+        {% if orden.centro_costo %}
+        <div class="info-item"><small>Centro de Costo</small><strong>{{ orden.centro_costo }}</strong></div>
+        {% endif %}
+        {% if orden.tecnico %}
+        <div class="info-item"><small>Técnico</small><strong>{{ orden.tecnico }}</strong></div>
+        {% endif %}
+        {% if orden.equipo %}
+        <div class="info-item"><small>Equipo</small><strong>{{ orden.equipo.marca }} {{ orden.equipo.modelo }}</strong></div>
+        {% endif %}
+        {% if orden.fecha_ingreso %}
+        <div class="info-item"><small>Fecha ingreso</small><strong>{{ orden.fecha_ingreso|date:"d/m/Y" }}</strong></div>
+        {% endif %}
+    </div>
+</div>
+
+{% if orden.motivo %}
+<div class="section">
+    <h2>Motivo del servicio</h2>
+    <p>{{ orden.motivo|linebreaksbr }}</p>
+</div>
+{% endif %}
+
+{% if orden.diagnostico %}
+<div class="section">
+    <h2>Diagnóstico / Hallazgos</h2>
+    <p>{{ orden.diagnostico|linebreaksbr }}</p>
+</div>
+{% endif %}
+
+{% if orden.trabajo_realizado %}
+<div class="section">
+    <h2>Trabajo Realizado</h2>
+    <p>{{ orden.trabajo_realizado|linebreaksbr }}</p>
+    {% if orden.horas_trabajadas %}
+    <p style="font-size:11px;color:#555;">Horas trabajadas: <strong>{{ orden.horas_trabajadas }}</strong></p>
+    {% endif %}
+</div>
+{% endif %}
+
+{% if orden.software_instalado %}
+<div class="section">
+    <h2>Software Instalado / Desinstalado</h2>
+    <p>{{ orden.software_instalado|linebreaksbr }}</p>
+</div>
+{% endif %}
+
+{% with items=orden.repuestos.all %}
+{% if items %}
+<div class="section">
+    <h2>Detalle del cobro</h2>
+    <table>
+        <thead><tr><th>Producto/Servicio</th><th class="text-center">Cant.</th><th class="text-end">Valor neto</th><th class="text-end">Total neto</th></tr></thead>
+        <tbody>
+            {% for r in items %}
+            <tr><td>{{ r.producto.nombre }}</td><td class="text-center">{{ r.cantidad }}</td><td class="text-end">${{ r.precio_unitario|floatformat:0 }}</td><td class="text-end">${{ r.total_neto|floatformat:0 }}</td></tr>
+            {% endfor %}
+            <tr class="fw-bold">
+                <td colspan="3" class="text-end">Total neto (sin IVA)</td>
+                <td class="text-end">${{ orden.total_neto|floatformat:0 }}</td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+{% endif %}
+{% endwith %}
+
+{% if orden.garantia_fin %}
+<div class="section">
+    <p style="padding:6px 10px;background:#eff6ff;border:1px solid #bfdbfe;border-radius:4px;">
+        <strong>Garantía vigente</strong> hasta {{ orden.garantia_fin|date:"d/m/Y" }}
+    </p>
+</div>
+{% endif %}
+
+{% if orden.orden_compra_cliente %}
+<div class="section">
+    <h2>Documentos</h2>
+    <div class="oc-info">
+        <strong>Orden de compra:</strong> {{ orden.orden_compra_cliente }}
+        {% if orden.orden_compra_archivo %}
+        <br><strong>Documento adjunto:</strong> <a href="{{ orden.orden_compra_archivo.url }}" target="_blank">Ver PDF</a>
+        {% endif %}
+    </div>
+</div>
+{% endif %}
+
+<div class="footer">
+    Documento generado el {% now "d/m/Y H:i" %} — {{ orden.cliente.razon_social }}
+</div>
+
+<script>
+window.onload = function() { window.print(); };
+</script>
+</body>
+</html>
