@@ -5,12 +5,19 @@
 <div class="card shadow">
     <div class="card-header"><h4 class="mb-0">Nuevo Ticket de Soporte</h4></div>
     <div class="card-body">
-        <form method="post">
+        <form method="post" enctype="multipart/form-data">
             {% csrf_token %}
             <div class="mb-3">
-                <label class="form-label">Equipo (opcional)</label>
+                <label class="form-label">Tu nombre (contacto) *</label>
+                <input type="text" name="nombre_contacto" class="form-control" required placeholder="Ej: María González">
+            </div>
+
+            <hr>
+            <h6>Equipo</h6>
+            <div class="mb-3">
+                <label class="form-label">Equipo registrado (si aparece en tu lista)</label>
                 <select name="equipo" class="form-select">
-                    <option value="">— Selecciona un equipo —</option>
+                    <option value="">— Selecciona o crea uno nuevo abajo —</option>
                     {% for e in equipos %}
                     <option value="{{ e.id }}">{{ e }}</option>
                     {% empty %}
@@ -18,10 +25,33 @@
                     {% endfor %}
                 </select>
             </div>
+            <div class="row">
+                <div class="col-md-4 mb-3">
+                    <label class="form-label">O crea uno nuevo — Marca</label>
+                    <input type="text" name="equipo_marca" class="form-control" placeholder="Ej: Lenovo, Dell, HP">
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label class="form-label">Modelo</label>
+                    <input type="text" name="equipo_modelo" class="form-control" placeholder="Ej: ThinkPad X1, OptiPlex">
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label class="form-label">Sistema operativo</label>
+                    <input type="text" name="sistema_operativo" class="form-control" placeholder="Ej: Windows 11, macOS, Ubuntu">
+                </div>
+            </div>
+
+            <hr>
             <div class="mb-3">
                 <label class="form-label">Describe el problema *</label>
                 <textarea name="diagnostico" class="form-control" rows="5" required placeholder="¿Qué sucede? ¿Desde cuándo? ¿Qué has intentado?"></textarea>
             </div>
+
+            <div class="mb-3">
+                <label class="form-label">Adjuntar fotos (opcional)</label>
+                <input type="file" name="fotos" class="form-control" multiple accept="image/*">
+                <div class="form-text">Puedes seleccionar varias fotos. Máximo 5MB por imagen.</div>
+            </div>
+
             <button type="submit" class="btn btn-primary">Enviar Ticket</button>
             <a href="{% url 'portal_dashboard' %}" class="btn btn-secondary">Cancelar</a>
         </form>
