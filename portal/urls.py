@@ -12,5 +12,6 @@ urlpatterns = [
     path('seguir/', views.seguir_ticket, name='portal_seguir'),
     path('comentar/<int:pk>/', views.comentar_ticket, name='portal_comentar'),
     path('oc/<int:pk>/', views.subir_oc, name='portal_subir_oc'),
+    path('identificacion/<int:pk>/', views.subir_identificacion, name='portal_subir_identificacion'),
     path('pdf/<int:pk>/', views.ticket_pdf, name='portal_ticket_pdf'),
 ]

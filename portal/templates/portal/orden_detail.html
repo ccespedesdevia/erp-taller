@@ -99,6 +99,44 @@
 </div>
 {% endif %}
 
+<!-- Identificación de PC -->
+{% if orden.datos_identificacion or orden.archivo_identificacion %}
+<div class="card shadow-sm mb-3">
+    <div class="card-header"><strong>Identificación del Equipo</strong></div>
+    <div class="card-body">
+        {% if orden.datos_identificacion %}
+        <pre class="mb-0" style="max-height:300px;overflow-y:auto;font-size:0.85rem;">{{ orden.datos_identificacion }}</pre>
+        {% endif %}
+        {% if orden.archivo_identificacion %}
+        <hr class="my-2">
+        <a href="{{ orden.archivo_identificacion.url }}" target="_blank" class="btn btn-sm btn-outline-secondary">📄 Ver informe del cliente</a>
+        {% endif %}
+    </div>
+</div>
+{% endif %}
+
+<!-- Subir identificación -->
+{% if not orden.archivo_identificacion and not orden.datos_identificacion %}
+{% if orden.estado == 'pendiente' or orden.estado == 'en_curso' %}
+<div class="card shadow-sm mb-3 border-info">
+    <div class="card-header bg-info bg-opacity-10 text-info fw-bold">Identificar este equipo</div>
+    <div class="card-body">
+        <p class="mb-2">Ejecuta el programa de identificación en el equipo y sube el archivo generado:</p>
+        <form method="post" action="{% url 'portal_subir_identificacion' orden.pk %}" enctype="multipart/form-data" class="row g-2">
+            {% csrf_token %}
+            <div class="col-md-8">
+                <input type="file" name="archivo_identificacion" class="form-control form-control-sm" accept=".txt" required>
+                <div class="form-text">Selecciona el archivo INFORME_{{ orden.codigo_seguimiento }}.txt del escritorio</div>
+            </div>
+            <div class="col-md-4">
+                <button class="btn btn-info btn-sm w-100">Subir informe</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endif %}
+{% endif %}
+
 <!-- Motivo -->
 {% if orden.motivo %}
 <div class="card shadow-sm mb-3">

@@ -48,9 +48,10 @@ class OrdenServicioAdmin(admin.ModelAdmin):
         ('Trabajo', {'fields': ['motivo', 'diagnostico', 'trabajo_realizado', 'software_instalado']}),
         ('Horas y Garantía', {'fields': ['horas_trabajadas', 'estado', 'garantia_fin']}),
         ('Documentos', {'fields': ['orden_compra_cliente', 'orden_compra_archivo', 'oc_aprobada']}),
+        ('Identificación de PC', {'fields': ['datos_identificacion', 'archivo_identificacion']}),
         ('Interno', {'fields': ['notas_internas']}),
     )
-    readonly_fields = ['fecha_ingreso']
+    readonly_fields = ['fecha_ingreso', 'datos_identificacion']
 
 
 admin.site.register(RepuestoUsado)

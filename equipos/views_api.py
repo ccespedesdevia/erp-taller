@@ -20,12 +20,13 @@ def identificar_equipo(request):
     mac_address = (data.get('mac_address') or '').strip()
     disco_serial = (data.get('disco_serial') or '').strip()
     motherboard_serial = (data.get('motherboard_serial') or '').strip()
+    software = data.get('software', [])
+    errores = data.get('errores', [])
+    ticket_codigo = (data.get('ticket_codigo') or '').strip()
 
-    if not any([uuid_bios, mac_address, disco_serial]):
-        return JsonResponse({'error': 'Se requiere uuid_bios, mac_address o disco_serial'}, status=400)
+    if not any([uuid_bios, mac_address, disco_serial, motherboard_serial]):
+        return JsonResponse({'error': 'No se pudo identificar el hardware'}, status=400)
 
-    # Buscar por huella digital
-    equipo = None
     criterios = Q()
     if uuid_bios:
         criterios |= Q(uuid_bios=uuid_bios)
@@ -52,12 +53,10 @@ def identificar_equipo(request):
         )
         created = True
 
-    # Actualizar hostname si cambió
     if hostname and hostname != equipo.hostname:
         equipo.hostname = hostname
         equipo.save(update_fields=['hostname'])
 
-    # Buscar tickets asociados
     tickets = OrdenServicio.objects.filter(equipo=equipo).order_by('-fecha_ingreso')
     tickets_data = [
         {
@@ -69,14 +68,37 @@ def identificar_equipo(request):
         for t in tickets
     ]
 
+    # Si viene código de ticket, almacenar datos de identificación
+    ticket = None
+    if ticket_codigo:
+        try:
+            ticket = OrdenServicio.objects.get(codigo_seguimiento=ticket_codigo)
+            snapshot = {
+                'hostname': hostname,
+                'uuid_bios': uuid_bios,
+                'mac_address': mac_address,
+                'disco_serial': disco_serial,
+                'motherboard_serial': motherboard_serial,
+                'software': software,
+                'errores': errores,
+            }
+            ticket.datos_identificacion = json.dumps(snapshot, indent=2, ensure_ascii=False)
+            if not ticket.equipo:
+                ticket.equipo = equipo
+            ticket.save(update_fields=['datos_identificacion', 'equipo'])
+        except OrdenServicio.DoesNotExist:
+            pass
+
     return JsonResponse({
         'ok': True,
         'creado': created,
         'equipo_id': equipo.pk,
+        'equipo': str(equipo),
         'tipo': equipo.get_tipo_display(),
         'marca': equipo.marca or '',
         'modelo': equipo.modelo or '',
         'numero_serie': equipo.numero_serie or '',
+        'hostname': equipo.hostname or '',
         'cliente': {
             'id': equipo.cliente.pk if equipo.cliente else None,
             'razon_social': equipo.cliente.razon_social if equipo.cliente else '',
@@ -84,4 +106,5 @@ def identificar_equipo(request):
         } if equipo.cliente else None,
         'tickets': tickets_data,
         'tickets_count': len(tickets_data),
+        'ticket_vinculado': ticket.codigo_seguimiento if ticket else None,
     })

@@ -40,6 +40,8 @@ class OrdenServicio(models.Model):
     orden_compra_cliente = models.CharField('Orden de compra', max_length=100, blank=True, help_text='N° de OC del cliente')
     orden_compra_archivo = models.FileField('Documento OC', upload_to='ordenes_oc/', blank=True, null=True)
     oc_aprobada = models.BooleanField('OC aprobada', default=False)
+    datos_identificacion = models.TextField('Datos identificación PC', blank=True, help_text='JSON con hardware, software y errores detectados por script')
+    archivo_identificacion = models.FileField('Informe del cliente', upload_to='identificacion/', blank=True, null=True, help_text='.txt generado por el script que el cliente sube')
     created_at = models.DateTimeField('Creado', auto_now_add=True)
     updated_at = models.DateTimeField('Actualizado', auto_now=True)
 

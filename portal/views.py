@@ -195,6 +195,15 @@ def subir_oc(request, pk):
     return redirect(request.META.get('HTTP_REFERER', '/'))
 
 
+def subir_identificacion(request, pk):
+    orden = get_object_or_404(OrdenServicio, pk=pk)
+    if request.method == 'POST' and request.FILES.get('archivo_identificacion'):
+        orden.archivo_identificacion = request.FILES['archivo_identificacion']
+        orden.save(update_fields=['archivo_identificacion'])
+        messages.success(request, 'Informe subido correctamente.')
+    return redirect(request.META.get('HTTP_REFERER', '/'))
+
+
 def ticket_pdf(request, pk):
     orden = get_object_or_404(OrdenServicio, pk=pk)
     return render(request, 'portal/ticket_pdf.html', {'orden': orden})

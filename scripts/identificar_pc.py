@@ -1,135 +1,196 @@
 """
-identificar_pc.py — Ejecutar en el PC del cliente para identificarlo en el ERP.
-Uso:  python identificar_pc.py  (o compilar a .exe con PyInstaller)
+identificar_pc.py — Identifica el equipo y envía datos al ERP CACD.
+
+INSTRUCCIONES PARA COMPILAR A .exe:
+  pip install pyinstaller
+  pyinstaller --onefile --noconsole --name CACD_Identificar identificar_pc.py
+
+USO:
+  identificar_pc.exe             (sin ventana, solo genera TXT)
+  identificar_pc.exe TKT-ABCDEF  (vincula al ticket)
+
+El programa:
+  1. Recolecta datos de hardware, software y errores del sistema
+  2. Envía los datos al ERP (invisible para el usuario)
+  3. Genera INFORME_TKT-XXXXXX.txt en el escritorio
+  4. El usuario sube ese TXT al ticket como comprobante
 """
 
-import subprocess
-import json
-import urllib.request
-import urllib.parse
-import sys
-import os
-
+import subprocess, json, urllib.request, os, datetime, sys, re
 
 API_URL = 'https://ccespedesdevia1715.pythonanywhere.com/api/equipos/identificar/'
 
 
-def ejecutar(cmd):
+def _cmd(args):
     try:
-        r = subprocess.run(cmd, capture_output=True, text=True, timeout=10)
+        r = subprocess.run(args, capture_output=True, text=True, timeout=15, creationflags=subprocess.CREATE_NO_WINDOW if hasattr(subprocess, 'CREATE_NO_WINDOW') else 0)
         return r.stdout.strip()
-    except Exception:
+    except:
         return ''
 
 
-def obtener_info():
-    info = {}
+def _parse_wmic(raw, field):
+    for line in raw.splitlines():
+        line = line.strip()
+        if line and field.lower() not in line.lower():
+            return line
+    return ''
 
-    # Hostname
-    info['hostname'] = ejecutar(['hostname'])
 
-    # UUID de BIOS (identificador único del equipo)
-    raw = ejecutar(['wmic', 'csproduct', 'get', 'uuid'])
-    for linea in raw.splitlines():
-        linea = linea.strip()
-        if linea and 'UUID' not in linea:
-            info['uuid_bios'] = linea
+def info_hardware():
+    i = {}
+    i['hostname'] = _cmd(['hostname'])
+    i['uuid_bios'] = _parse_wmic(_cmd(['wmic', 'csproduct', 'get', 'uuid']), 'UUID')
+    i['mac_address'] = _parse_wmic(_cmd(['wmic', 'nic', 'where', 'NetEnabled=TRUE', 'get', 'MACAddress']), 'MAC')
+    i['disco_serial'] = _parse_wmic(_cmd(['wmic', 'diskdrive', 'get', 'SerialNumber']), 'Serial')
+    i['motherboard_serial'] = _parse_wmic(_cmd(['wmic', 'baseboard', 'get', 'SerialNumber']), 'Serial')
+    i['fabricante'] = _parse_wmic(_cmd(['wmic', 'csproduct', 'get', 'Vendor']), 'Vendor')
+    i['modelo_pc'] = _parse_wmic(_cmd(['wmic', 'csproduct', 'get', 'Name']), 'Name')
+    i['cpu'] = _parse_wmic(_cmd(['wmic', 'cpu', 'get', 'Name']), 'Name')
+    i['ram_gb'] = ''
+    raw = _cmd(['wmic', 'computersystem', 'get', 'TotalPhysicalMemory'])
+    for l in raw.splitlines():
+        l = l.strip()
+        if l.isdigit():
+            try:
+                i['ram_gb'] = f'{int(l) // (1024**3)} GB'
+            except:
+                pass
             break
-
-    # MAC address (primera interfaz física)
-    raw = ejecutar(['wmic', 'nic', 'where', 'NetEnabled=TRUE', 'get', 'MACAddress'])
-    for linea in raw.splitlines():
-        linea = linea.strip()
-        if linea and 'MAC' not in linea:
-            info['mac_address'] = linea
+    i['disco_modelo'] = _parse_wmic(_cmd(['wmic', 'diskdrive', 'get', 'Model']), 'Model')
+    i['disco_tamano'] = ''
+    raw = _cmd(['wmic', 'diskdrive', 'get', 'Size'])
+    for l in raw.splitlines():
+        l = l.strip()
+        if l.isdigit():
+            try:
+                i['disco_tamano'] = f'{int(l) // (1024**3)} GB'
+            except:
+                pass
             break
-
-    # Serial del disco
-    raw = ejecutar(['wmic', 'diskdrive', 'get', 'SerialNumber'])
-    for linea in raw.splitlines():
-        linea = linea.strip()
-        if linea and 'Serial' not in linea:
-            info['disco_serial'] = linea
-            break
-
-    # Serial de la motherboard
-    raw = ejecutar(['wmic', 'baseboard', 'get', 'SerialNumber'])
-    for linea in raw.splitlines():
-        linea = linea.strip()
-        if linea and 'Serial' not in linea:
-            info['motherboard_serial'] = linea
-            break
-
-    return info
+    return i
 
 
-def enviar(info):
-    data = json.dumps(info).encode()
+def info_software():
+    """Lista de programas instalados (no requiere admin)."""
+    programas = []
+    raw = _cmd(['wmic', 'product', 'get', 'name,version'])
+    for line in raw.splitlines():
+        line = line.strip()
+        if not line or 'Name' in line:
+            continue
+        partes = re.split(r'\s{2,}', line, maxsplit=1)
+        nombre = partes[0].strip()
+        version = partes[1].strip() if len(partes) > 1 else ''
+        if nombre:
+            programas.append({'nombre': nombre, 'version': version})
+    return programas
+
+
+def info_errores():
+    """Errores recientes del sistema (requiere admin, falla silenciosamente si no)."""
+    errores = []
+    raw = _cmd(['wevtutil', 'qe', 'System', '/q:Event[System[(Level=1 or Level=2)]]', '/c:20', '/f:text'])
+    if not raw:
+        return errores
+    evento = {}
+    for line in raw.splitlines():
+        line = line.strip()
+        if line.startswith('Provider'):
+            m = re.search(r'Name:\s*(\S+)', line)
+            if m:
+                evento['fuente'] = m.group(1)
+        elif line.startswith('TimeCreated'):
+            m = re.search(r'SystemTime:\s*(\S+)', line)
+            if m:
+                evento['fecha'] = m.group(1)
+        elif line.startswith('EventId'):
+            m = re.search(r'(\d+)', line)
+            if m:
+                evento['id'] = m.group(1)
+        elif line.startswith('Level'):
+            evento['nivel'] = 'Error' if '2' in line else 'Crítico'
+        elif line.startswith('Message'):
+            m = re.search(r'Message\s*(.*)', line)
+            if m and m.group(1).strip():
+                evento['mensaje'] = m.group(1).strip()
+        if evento.get('fuente') and evento.get('mensaje'):
+            errores.append(dict(evento))
+            evento = {}
+    return errores[:20]
+
+
+def generar_txt(info, ticket_codigo):
+    """Genera INFORME_TKT-XXXXXX.txt en el escritorio."""
+    escritorio = os.path.join(os.path.expanduser('~'), 'Desktop')
+    if not os.path.exists(escritorio):
+        escritorio = os.path.expanduser('~')
+    cod = ticket_codigo or 'SIN-TICKET'
+    ruta = os.path.join(escritorio, f'INFORME_{cod}.txt')
+
+    with open(ruta, 'w', encoding='utf-8') as f:
+        f.write(f'INFORME DE IDENTIFICACION DE EQUIPO\n')
+        f.write(f'Codigo: {cod}\n')
+        f.write(f'Fecha: {datetime.datetime.now().strftime("%Y-%m-%d %H:%M")}\n')
+        f.write(f'{"="*45}\n\n')
+        f.write(f'Hostname:      {info.get("hostname", "")}\n')
+        f.write(f'Fabricante:     {info.get("fabricante", "")}\n')
+        f.write(f'Modelo:         {info.get("modelo_pc", "")}\n')
+        f.write(f'N° Serie PC:    {info.get("uuid_bios", "")}\n')
+        f.write(f'CPU:            {info.get("cpu", "")}\n')
+        f.write(f'RAM:            {info.get("ram_gb", "")}\n')
+        f.write(f'Disco:          {info.get("disco_modelo", "")} ({info.get("disco_tamano", "")})\n')
+        f.write(f'MAC:            {info.get("mac_address", "")}\n')
+        f.write(f'\n{"="*45}\n')
+        f.write('CACD Soluciones — https://ccespedesdevia1715.pythonanywhere.com\n')
+    return ruta
+
+
+def enviar_al_erp(payload):
+    data = json.dumps(payload).encode()
     req = urllib.request.Request(
-        API_URL,
-        data=data,
-        headers={'Content-Type': 'application/json'},
-        method='POST',
+        API_URL, data=data,
+        headers={'Content-Type': 'application/json'}, method='POST',
     )
     try:
-        resp = urllib.request.urlopen(req, timeout=15)
+        resp = urllib.request.urlopen(req, timeout=20)
         return json.loads(resp.read().decode())
     except urllib.error.HTTPError as e:
-        return json.loads(e.read().decode()) if e.code else {'error': str(e)}
+        cuerpo = e.read().decode()
+        try:
+            return json.loads(cuerpo)
+        except:
+            return {'error': cuerpo[:200]}
     except Exception as e:
         return {'error': str(e)}
 
 
-def mostrar(resultado):
-    if resultado.get('error'):
-        print(f'\n  ERROR: {resultado["error"]}')
-        return
-
-    print('\n' + '=' * 55)
-    print('  CACD Soluciones — Identificación de Equipo')
-    print('=' * 55)
-
-    if resultado.get('creado'):
-        print('\n  Nuevo equipo registrado en el sistema.')
-    else:
-        print('\n  Equipo encontrado en nuestros registros.')
-
-    print(f'\n  Tipo:      {resultado.get("tipo", "")}')
-    print(f'  Marca:     {resultado.get("marca", "")}')
-    print(f'  Modelo:    {resultado.get("modelo", "")}')
-    print(f'  N° Serie:  {resultado.get("numero_serie", "")}')
-
-    cliente = resultado.get('cliente')
-    if cliente and cliente.get('razon_social'):
-        print(f'\n  Cliente:   {cliente["razon_social"]}')
-        print(f'  RUT:       {cliente["rut"]}')
-        print(f'  ID:        #{cliente["id"]}')
-
-    tickets = resultado.get('tickets', [])
-    if tickets:
-        print(f'\n  Tickets asociados ({resultado["tickets_count"]}):')
-        for t in tickets:
-            print(f'    • {t["codigo"]} — {t["estado"]} — {t["fecha"]}')
-            if t['motivo']:
-                print(f'      Motivo: {t["motivo"][:80]}')
-    else:
-        print('\n  Sin tickets asociados.')
-
-    print('=' * 55)
-
-
 def main():
-    print('\n  Identificando equipo...')
-    info = obtener_info()
-    if not any([info.get('uuid_bios'), info.get('mac_address'), info.get('disco_serial')]):
-        print('\n  No se pudieron obtener datos del hardware.')
-        print('  Ejecutar como Administrador en Windows.')
-        input('\n  Presiona Enter para salir...')
-        return
+    ticket_codigo = sys.argv[1].strip().upper() if len(sys.argv) > 1 else ''
 
-    resultado = enviar(info)
-    mostrar(resultado)
-    input('\n  Presiona Enter para salir...')
+    hw = info_hardware()
+    sw = info_software()
+    errs = info_errores()
+
+    payload = {k: v for k, v in hw.items() if v}
+    payload['software'] = sw
+    payload['errores'] = errs
+    if ticket_codigo:
+        payload['ticket_codigo'] = ticket_codigo
+
+    # Enviar al ERP (invisible)
+    try:
+        resultado = enviar_al_erp(payload)
+    except:
+        resultado = {}
+
+    # Generar TXT en el escritorio
+    txt_path = generar_txt(hw, ticket_codigo)
+    # Abrir carpeta para que el usuario vea el archivo
+    try:
+        subprocess.Popen(['explorer', '/select,', txt_path])
+    except:
+        pass
 
 
 if __name__ == '__main__':
