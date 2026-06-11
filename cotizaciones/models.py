@@ -28,6 +28,14 @@ class Cotizacion(models.Model):
     def __str__(self):
         return f'COT #{self.id} - {self.cliente.razon_social}'
 
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        total = self.items.aggregate(
+            total=models.Sum(models.F('cantidad') * models.F('precio_unitario'))
+        )['total'] or 0
+        if self.total != total:
+            Cotizacion.objects.filter(pk=self.pk).update(total=total)
+
 
 class ItemCotizacion(models.Model):
     cotizacion = models.ForeignKey(Cotizacion, on_delete=models.CASCADE, related_name='items', verbose_name='Cotización')

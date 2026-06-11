@@ -29,7 +29,7 @@ class MovimientoStock(models.Model):
     TIPO_CHOICES = [
         ('entrada', 'Entrada'), ('salida', 'Salida'), ('ajuste', 'Ajuste'),
     ]
-    producto = models.ForeignKey(Producto, on_delete=models.CASCADE, related_name='movimientos', verbose_name='Producto')
+    producto = models.ForeignKey(Producto, on_delete=models.PROTECT, related_name='movimientos', verbose_name='Producto')
     tipo = models.CharField('Tipo', max_length=20, choices=TIPO_CHOICES)
     cantidad = models.IntegerField('Cantidad')
     referencia = models.CharField('Referencia', max_length=200, blank=True, help_text='OC, orden de servicio, etc.')

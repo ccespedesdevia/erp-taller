@@ -1,4 +1,5 @@
 from .settings import *
+from django.core.exceptions import ImproperlyConfigured
 import os
 
 DEBUG = False
@@ -15,6 +16,10 @@ DATABASES = {
     }
 }
 
+SECRET_KEY = os.environ.get('SECRET_KEY')
+if not SECRET_KEY:
+    raise ImproperlyConfigured('SECRET_KEY environment variable is required')
+
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.StaticFilesStorage'
-SECRET_KEY = os.environ.get('SECRET_KEY')
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
