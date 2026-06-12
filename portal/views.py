@@ -212,8 +212,8 @@ def herramientas(request):
 
 
 def descargar_script(request):
-    ruta = os.path.join(settings.BASE_DIR, 'scripts', 'identificar_pc.py')
-    return FileResponse(open(ruta, 'rb'), as_attachment=True, filename='CACD_Identificar_PC.py')
+    ruta = os.path.join(settings.BASE_DIR, 'scripts', 'CACD_Identificar_PC.bat')
+    return FileResponse(open(ruta, 'rb'), as_attachment=True, filename='CACD_Identificar_PC.bat')
 
 
 def ticket_pdf(request, pk):

@@ -26,18 +26,18 @@
         <div class="card shadow-sm mb-4 border-info">
             <div class="card-header bg-info bg-opacity-10 text-info fw-bold">💻 Identificar mi PC</div>
             <div class="card-body">
-                <p>Descarga y ejecuta esta herramienta en el equipo que necesita soporte para que nuestros técnicos puedan identificarlo automáticamente.</p>
+                <p>Descarga y ejecuta el archivo <strong>CACD_Identificar_PC.bat</strong> en el equipo que necesita soporte.</p>
                 <div class="d-flex gap-2 flex-wrap">
                     <a href="{% url 'descargar_script' %}" class="btn btn-info">
-                        ⬇️ Descargar Script
+                        ⬇️ Descargar .BAT
                     </a>
                 </div>
                 <hr>
-                <h6>¿Qué datos se recolectan?</h6>
+                <h6>¿Qué hace?</h6>
                 <ul class="small mb-2">
-                    <li><strong>Hardware:</strong> nombre del equipo, marca, modelo, CPU, RAM, discos, UUID BIOS, MAC</li>
-                    <li><strong>Software:</strong> lista de programas instalados</li>
-                    <li><strong>Errores:</strong> errores recientes del sistema (solo si se ejecuta como Administrador)</li>
+                    <li>Genera un informe completo del sistema con <strong>msinfo32</strong></li>
+                    <li>Te preguntará <strong>dónde guardar</strong> el archivo</li>
+                    <li>Solo recolecta información de hardware y configuración del sistema</li>
                 </ul>
                 <p class="small text-muted mb-0">🔒 No se recolectan documentos personales, historial de navegación, ni archivos del usuario.</p>
                 <hr>
