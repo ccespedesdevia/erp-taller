@@ -1,5 +1,15 @@
 @echo off
+cd /d "%~dp0"
 title CACD Soluciones - Identificar PC
+
+:: Auto-elevarse como Administrador si es necesario
+net session >nul 2>&1
+if %errorlevel% neq 0 (
+    echo Solicitando permisos de Administrador...
+    powershell start-process -verb runas "%~f0"
+    exit /b
+)
+
 echo ========================================
 echo   CACD Soluciones - Identificacion de PC
 echo ========================================
@@ -20,10 +30,15 @@ set ARCHIVO=%DEST%\CACD_InfoSistema.txt
 start /wait msinfo32 /report "%ARCHIVO%"
 
 echo.
-echo Informe generado exitosamente:
-echo %ARCHIVO%
+echo ========================================
+echo   INFORME GENERADO EXITOSAMENTE
+echo ========================================
+echo   Archivo: %ARCHIVO%
 echo.
-echo Puedes subir este archivo desde el portal:
-echo https://ccespedesdevia1715.pythonanywhere.com/portal/seguir/
+echo   Pasos siguientes:
+echo   1. Abre https://ccespedesdevia1715.pythonanywhere.com/portal/seguir/
+echo   2. Ingresa el codigo de tu ticket
+echo   3. Sube el archivo CACD_InfoSistema.txt
+echo ========================================
 echo.
 pause
