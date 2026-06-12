@@ -108,3 +108,25 @@ def identificar_equipo(request):
         'tickets_count': len(tickets_data),
         'ticket_vinculado': ticket.codigo_seguimiento if ticket else None,
     })
+
+
+@csrf_exempt
+def subir_informe(request):
+    if request.method != 'POST':
+        return JsonResponse({'error': 'POST requerido'}, status=405)
+
+    ticket_codigo = request.POST.get('ticket_codigo', '').strip().upper()
+    archivo = request.FILES.get('archivo')
+
+    if not ticket_codigo:
+        return JsonResponse({'error': 'ticket_codigo requerido'}, status=400)
+    if not archivo:
+        return JsonResponse({'error': 'archivo requerido'}, status=400)
+
+    try:
+        orden = OrdenServicio.objects.get(codigo_seguimiento=ticket_codigo)
+        orden.archivo_identificacion = archivo
+        orden.save(update_fields=['archivo_identificacion'])
+        return JsonResponse({'ok': True, 'ticket': ticket_codigo, 'archivo': archivo.name})
+    except OrdenServicio.DoesNotExist:
+        return JsonResponse({'error': f'Ticket {ticket_codigo} no encontrado'}, status=404)
