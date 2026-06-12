@@ -26,27 +26,17 @@
         <div class="card shadow-sm mb-4 border-info">
             <div class="card-header bg-info bg-opacity-10 text-info fw-bold">💻 Identificar mi PC</div>
             <div class="card-body">
-                <p>Descarga y ejecuta el archivo <strong>CACD_Identificar_PC.bat</strong> en el equipo que necesita soporte.</p>
+                <p>Descarga y ejecuta el archivo <strong>CACD_Identificar_PC.bat</strong> en el equipo que necesita soporte. Solo haz doble clic y acepta "Ejecutar como administrador".</p>
                 <div class="d-flex gap-2 flex-wrap">
                     <a href="{% url 'descargar_script' %}" class="btn btn-info">
                         ⬇️ Descargar .BAT
                     </a>
                 </div>
-                <div class="alert alert-warning small mt-2 mb-0 py-2">
-                    ⚠️ <strong>Windows bloquea archivos descargados.</strong> Antes de ejecutar:
-                    <ol class="mb-0 mt-1 ps-3">
-                        <li>Clic derecho sobre el archivo descargado → <strong>Propiedades</strong></li>
-                        <li>Marca <strong>"Desbloquear"</strong> si aparece</li>
-                        <li>Aplica y ejecuta normalmente</li>
-                    </ol>
-                </div>
                 <hr>
                 <h6>¿Qué hace?</h6>
                 <ul class="small mb-2">
                     <li>Genera un informe completo del sistema con <strong>msinfo32</strong></li>
-                    <li>Te preguntará <strong>dónde guardar</strong> el archivo</li>
-                    <li>Si tienes ticket, lo envía automáticamente</li>
-                    <li>Si no tienes ticket, lo guarda para que lo subas después</li>
+                    <li>Lo guarda automáticamente en el <strong>Escritorio</strong></li>
                     <li>Solo recolecta información de hardware y configuración del sistema</li>
                 </ul>
                 <p class="small text-muted mb-0">🔒 No se recolectan documentos personales, historial de navegación, ni archivos del usuario.</p>

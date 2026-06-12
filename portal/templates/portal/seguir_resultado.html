@@ -119,12 +119,12 @@
         <div class="card shadow-sm mb-3 border-info">
             <div class="card-header bg-info bg-opacity-10 text-info fw-bold">Identificar este equipo</div>
             <div class="card-body">
-                <p class="mb-2">Descarga y ejecuta <strong>CACD_Identificar_PC.bat</strong> desde <a href="{% url 'portal_herramientas' %}">Herramientas</a> y sube el archivo generado:</p>
+                <p class="mb-2">Descarga <a href="{% url 'portal_herramientas' %}">CACD_Identificar_PC.bat</a>, ejecútalo en el equipo, y sube el archivo generado:</p>
                 <form method="post" action="{% url 'portal_subir_identificacion' orden.pk %}" enctype="multipart/form-data" class="row g-2">
                     {% csrf_token %}
                     <div class="col-md-8">
                         <input type="file" name="archivo_identificacion" class="form-control form-control-sm" accept=".txt" required>
-                        <div class="form-text">Selecciona el archivo CACD_InfoSistema.txt generado</div>
+                        <div class="form-text">Busca CACD_InfoSistema.txt en el Escritorio</div>
                     </div>
                     <div class="col-md-4">
                         <button class="btn btn-info btn-sm w-100">Subir informe</button>
