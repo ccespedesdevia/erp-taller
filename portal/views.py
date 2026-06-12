@@ -204,6 +204,10 @@ def subir_identificacion(request, pk):
     return redirect(request.META.get('HTTP_REFERER', '/'))
 
 
+def herramientas(request):
+    return render(request, 'portal/herramientas.html')
+
+
 def ticket_pdf(request, pk):
     orden = get_object_or_404(OrdenServicio, pk=pk)
     return render(request, 'portal/ticket_pdf.html', {'orden': orden})

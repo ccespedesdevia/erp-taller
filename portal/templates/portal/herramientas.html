@@ -1,0 +1,89 @@
+{% extends "portal/base_portal.html" %}
+{% load static %}
+{% block title %}Herramientas{% endblock %}
+{% block content %}
+<div class="row justify-content-center mt-4">
+    <div class="col-md-11">
+
+        <h3 class="mb-4">🔧 Herramientas de Diagnóstico</h3>
+
+        <!-- Speed Test -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-header fw-bold">🌐 Test de Velocidad</div>
+            <div class="card-body p-0">
+                <iframe src="https://fast.com/embed/" width="100%" height="400" style="border:none;border-radius:0 0 8px 8px;" allow="geolocation" loading="lazy"></iframe>
+            </div>
+            <div class="card-footer text-muted small">Powered by Fast.com — Netflix</div>
+        </div>
+
+        <div class="row">
+            <!-- IP / Conexión -->
+            <div class="col-md-6 mb-4">
+                <div class="card shadow-sm h-100">
+                    <div class="card-header fw-bold">🖥 Mi Conexión</div>
+                    <div class="card-body" id="connection-info">
+                        <p class="text-muted mb-0">Cargando información...</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Ping / Latencia -->
+            <div class="col-md-6 mb-4">
+                <div class="card shadow-sm h-100">
+                    <div class="card-header fw-bold">📡 Ping / Latencia</div>
+                    <div class="card-body">
+                        <p class="mb-2">Prueba de latencia contra servidores conocidos:</p>
+                        <div id="ping-results"></div>
+                        <button class="btn btn-sm btn-outline-primary mt-2" onclick="testPing()">Ejecutar Ping</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script>
+// IP y conexión
+fetch('https://api.ipify.org?format=json')
+    .then(r => r.json())
+    .then(d => {
+        let html = `<div class="mb-2"><strong>IP Pública:</strong> ${d.ip}</div>`;
+        html += `<div class="mb-2"><strong>User Agent:</strong> <span class="text-muted" style="font-size:0.85rem;">${navigator.userAgent.slice(0,120)}</span></div>`;
+        html += `<div class="mb-2"><strong>Idioma:</strong> ${navigator.language}</div>`;
+        html += `<div><strong>Resolución:</strong> ${screen.width}x${screen.height}</div>`;
+        // ISP
+        fetch(`https://ipapi.co/${d.ip}/json/`)
+            .then(r => r.json())
+            .then(i => {
+                if(i.org) html += `<div class="mt-2"><strong>ISP:</strong> ${i.org}</div>`;
+                if(i.city && i.country_name) html += `<div><strong>Ubicación:</strong> ${i.city}, ${i.country_name}</div>`;
+                document.getElementById('connection-info').innerHTML = html;
+            }).catch(() => document.getElementById('connection-info').innerHTML = html);
+    }).catch(() => document.getElementById('connection-info').innerHTML = '<p class="text-muted mb-0">No se pudo obtener la IP</p>');
+
+// Ping test
+function testPing() {
+    const targets = [
+        {name:'Google', url:'https://www.google.com'},
+        {name:'Cloudflare', url:'https://www.cloudflare.com'},
+        {name:'Fast.com', url:'https://fast.com'},
+    ];
+    const div = document.getElementById('ping-results');
+    div.innerHTML = '<p class="text-muted">Probando...</p>';
+
+    Promise.all(targets.map(t =>
+        fetch(t.url, {mode:'no-cors', cache:'no-store'}).then(
+            () => ({name:t.name, status:'✅ Accesible'})
+        ).catch(
+            () => ({name:t.name, status:'⏳ No responde'})
+        )
+    )).then(results => {
+        div.innerHTML = results.map(r =>
+            `<div style="padding:4px 0;border-bottom:1px solid #f1f5f9;"><strong>${r.name}:</strong> ${r.status}</div>`
+        ).join('');
+    });
+}
+testPing();
+</script>
+{% endblock %}

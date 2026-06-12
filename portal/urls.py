@@ -14,4 +14,5 @@ urlpatterns = [
     path('oc/<int:pk>/', views.subir_oc, name='portal_subir_oc'),
     path('identificacion/<int:pk>/', views.subir_identificacion, name='portal_subir_identificacion'),
     path('pdf/<int:pk>/', views.ticket_pdf, name='portal_ticket_pdf'),
+    path('herramientas/', views.herramientas, name='portal_herramientas'),
 ]
