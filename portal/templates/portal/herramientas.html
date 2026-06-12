@@ -22,6 +22,33 @@
             </div>
         </div>
 
+        <!-- Identificación de PC -->
+        <div class="card shadow-sm mb-4 border-info">
+            <div class="card-header bg-info bg-opacity-10 text-info fw-bold">💻 Identificar mi PC</div>
+            <div class="card-body">
+                <p>Descarga y ejecuta esta herramienta en el equipo que necesita soporte para que nuestros técnicos puedan identificarlo automáticamente.</p>
+                <div class="d-flex gap-2 flex-wrap">
+                    <a href="{% url 'descargar_script' %}" class="btn btn-info">
+                        ⬇️ Descargar Script
+                    </a>
+                </div>
+                <hr>
+                <h6>¿Qué datos se recolectan?</h6>
+                <ul class="small mb-2">
+                    <li><strong>Hardware:</strong> nombre del equipo, marca, modelo, CPU, RAM, discos, UUID BIOS, MAC</li>
+                    <li><strong>Software:</strong> lista de programas instalados</li>
+                    <li><strong>Errores:</strong> errores recientes del sistema (solo si se ejecuta como Administrador)</li>
+                </ul>
+                <p class="small text-muted mb-0">🔒 No se recolectan documentos personales, historial de navegación, ni archivos del usuario.</p>
+                <hr>
+                <p class="mb-0 small">
+                    ¿Ya tienes un ticket?
+                    <a href="{% url 'portal_seguir' %}">Ingresa el código aquí</a>
+                    para subir el informe generado.
+                </p>
+            </div>
+        </div>
+
         <div class="row">
             <!-- IP / Conexión -->
             <div class="col-md-6 mb-4">

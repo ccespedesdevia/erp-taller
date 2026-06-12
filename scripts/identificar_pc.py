@@ -68,6 +68,9 @@ def info_hardware():
             except:
                 pass
             break
+    i['windows_version'] = _cmd(['wmic', 'os', 'get', 'Caption']).splitlines()[-1].strip() if _cmd(['wmic', 'os', 'get', 'Caption']) else ''
+    i['arquitectura'] = _cmd(['wmic', 'os', 'get', 'OSArchitecture']).splitlines()[-1].strip() if _cmd(['wmic', 'os', 'get', 'OSArchitecture']) else ''
+    i['ultimo_boot'] = _cmd(['wmic', 'os', 'get', 'LastBootUpTime']).splitlines()[-1].strip() if _cmd(['wmic', 'os', 'get', 'LastBootUpTime']) else ''
     return i
 
 
@@ -90,38 +93,64 @@ def info_software():
 def info_errores():
     """Errores recientes del sistema (requiere admin, falla silenciosamente si no)."""
     errores = []
-    raw = _cmd(['wevtutil', 'qe', 'System', '/q:Event[System[(Level=1 or Level=2)]]', '/c:20', '/f:text'])
-    if not raw:
-        return errores
-    evento = {}
-    for line in raw.splitlines():
-        line = line.strip()
-        if line.startswith('Provider'):
-            m = re.search(r'Name:\s*(\S+)', line)
-            if m:
-                evento['fuente'] = m.group(1)
-        elif line.startswith('TimeCreated'):
-            m = re.search(r'SystemTime:\s*(\S+)', line)
-            if m:
-                evento['fecha'] = m.group(1)
-        elif line.startswith('EventId'):
-            m = re.search(r'(\d+)', line)
-            if m:
-                evento['id'] = m.group(1)
-        elif line.startswith('Level'):
-            evento['nivel'] = 'Error' if '2' in line else 'Crítico'
-        elif line.startswith('Message'):
-            m = re.search(r'Message\s*(.*)', line)
-            if m and m.group(1).strip():
-                evento['mensaje'] = m.group(1).strip()
-        if evento.get('fuente') and evento.get('mensaje'):
-            errores.append(dict(evento))
-            evento = {}
+    for log in ['System', 'Application']:
+        raw = _cmd(['wevtutil', 'qe', log, '/q:Event[System[(Level=1 or Level=2)]]', '/c:10', '/f:text'])
+        if not raw:
+            continue
+        evento = {}
+        for line in raw.splitlines():
+            line = line.strip()
+            if line.startswith('Provider'):
+                m = re.search(r'Name:\s*(\S+)', line)
+                if m:
+                    evento['fuente'] = m.group(1)
+            elif line.startswith('TimeCreated'):
+                m = re.search(r'SystemTime:\s*(\S+)', line)
+                if m:
+                    evento['fecha'] = m.group(1)
+            elif line.startswith('EventId'):
+                m = re.search(r'(\d+)', line)
+                if m:
+                    evento['id'] = m.group(1)
+            elif line.startswith('Level'):
+                evento['nivel'] = 'Error' if '2' in line else 'Crítico'
+            elif line.startswith('Message'):
+                m = re.search(r'Message\s*(.*)', line)
+                if m and m.group(1).strip():
+                    evento['mensaje'] = m.group(1).strip()
+            if evento.get('fuente') and evento.get('mensaje'):
+                evento['log'] = log
+                errores.append(dict(evento))
+                evento = {}
     return errores[:20]
 
 
+def info_procesos():
+    """Top 10 procesos por uso de memoria (no requiere admin)."""
+    procesos = []
+    raw = _cmd(['tasklist', '/fo', 'csv', '/nh'])
+    if not raw:
+        return procesos
+    lines = raw.splitlines()
+    parsed = []
+    for line in lines:
+        parts = line.split(',')
+        if len(parts) >= 5:
+            nombre = parts[0].strip('" ')
+            try:
+                memoria = int(parts[4].strip('" ').replace('.', '').replace(',', ''))
+                parsed.append((nombre, memoria))
+            except:
+                pass
+    parsed.sort(key=lambda x: x[1], reverse=True)
+    for nombre, memoria in parsed[:10]:
+        mb = memoria / 1024
+        procesos.append({'nombre': nombre, 'memoria_mb': round(mb, 1)})
+    return procesos
+
+
 def generar_txt(info, ticket_codigo):
-    """Genera INFORME_TKT-XXXXXX.txt en el escritorio."""
+    """Genera INFORME_TKT-XXXXXX.txt en el escritorio con datos básicos."""
     escritorio = os.path.join(os.path.expanduser('~'), 'Desktop')
     if not os.path.exists(escritorio):
         escritorio = os.path.expanduser('~')
@@ -129,20 +158,18 @@ def generar_txt(info, ticket_codigo):
     ruta = os.path.join(escritorio, f'INFORME_{cod}.txt')
 
     with open(ruta, 'w', encoding='utf-8') as f:
-        f.write(f'INFORME DE IDENTIFICACION DE EQUIPO\n')
-        f.write(f'Codigo: {cod}\n')
+        f.write('=== INFORME DE IDENTIFICACION DE PC ===\n')
+        f.write(f'Codigo Ticket: {cod}\n')
         f.write(f'Fecha: {datetime.datetime.now().strftime("%Y-%m-%d %H:%M")}\n')
-        f.write(f'{"="*45}\n\n')
-        f.write(f'Hostname:      {info.get("hostname", "")}\n')
-        f.write(f'Fabricante:     {info.get("fabricante", "")}\n')
-        f.write(f'Modelo:         {info.get("modelo_pc", "")}\n')
-        f.write(f'N° Serie PC:    {info.get("uuid_bios", "")}\n')
-        f.write(f'CPU:            {info.get("cpu", "")}\n')
-        f.write(f'RAM:            {info.get("ram_gb", "")}\n')
-        f.write(f'Disco:          {info.get("disco_modelo", "")} ({info.get("disco_tamano", "")})\n')
-        f.write(f'MAC:            {info.get("mac_address", "")}\n')
-        f.write(f'\n{"="*45}\n')
-        f.write('CACD Soluciones — https://ccespedesdevia1715.pythonanywhere.com\n')
+        f.write(f'{"="*40}\n\n')
+        f.write(f'Hostname:    {info.get("hostname", "")}\n')
+        f.write(f'Fabricante:  {info.get("fabricante", "")}\n')
+        f.write(f'Modelo:      {info.get("modelo_pc", "")}\n')
+        f.write(f'Sistema:     {info.get("windows_version", info.get("cpu", ""))}\n')
+        f.write(f'UUID BIOS:   {info.get("uuid_bios", "")}\n')
+        f.write(f'\n{"="*40}\n')
+        f.write('CACD Soluciones - https://ccespedesdevia1715.pythonanywhere.com\n')
+        f.write('Este equipo fue identificado correctamente.\n')
     return ruta
 
 
@@ -171,10 +198,12 @@ def main():
     hw = info_hardware()
     sw = info_software()
     errs = info_errores()
+    procs = info_procesos()
 
     payload = {k: v for k, v in hw.items() if v}
     payload['software'] = sw
     payload['errores'] = errs
+    payload['procesos'] = procs
     if ticket_codigo:
         payload['ticket_codigo'] = ticket_codigo
 

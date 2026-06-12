@@ -1,7 +1,10 @@
 import datetime
+import os
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
+from django.http import FileResponse
+from django.conf import settings
 from clientes.models import Cliente
 from ordenes.models import OrdenServicio, FotoOrden, ComentarioTicket
 from equipos.models import Equipo
@@ -206,6 +209,11 @@ def subir_identificacion(request, pk):
 
 def herramientas(request):
     return render(request, 'portal/herramientas.html')
+
+
+def descargar_script(request):
+    ruta = os.path.join(settings.BASE_DIR, 'scripts', 'identificar_pc.py')
+    return FileResponse(open(ruta, 'rb'), as_attachment=True, filename='CACD_Identificar_PC.py')
 
 
 def ticket_pdf(request, pk):
