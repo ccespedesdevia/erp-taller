@@ -16,4 +16,5 @@ urlpatterns = [
     path('pdf/<int:pk>/', views.ticket_pdf, name='portal_ticket_pdf'),
     path('herramientas/', views.herramientas, name='portal_herramientas'),
     path('descargar-script/', views.descargar_script, name='descargar_script'),
+    path('descargar-bat/<int:pk>/', views.descargar_bat_ticket, name='descargar_bat_ticket'),
 ]

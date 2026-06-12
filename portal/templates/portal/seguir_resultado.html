@@ -101,9 +101,7 @@
             <div class="card-header"><strong>Identificación del Equipo</strong></div>
             <div class="card-body">
                 {% if orden.datos_identificacion %}
-                {% with datos=orden.datos_identificacion|slice:"1:-1" %}
                 <pre class="mb-0" style="max-height:300px;overflow-y:auto;font-size:0.85rem;">{{ orden.datos_identificacion }}</pre>
-                {% endwith %}
                 {% endif %}
                 {% if orden.archivo_identificacion %}
                 <hr class="my-2">
@@ -113,18 +111,22 @@
         </div>
         {% endif %}
 
-        <!-- Subir identificación -->
-        {% if not orden.archivo_identificacion and not orden.datos_identificacion %}
+        <!-- Subir / Descargar identificación -->
         {% if orden.estado == 'pendiente' or orden.estado == 'en_curso' %}
         <div class="card shadow-sm mb-3 border-info">
             <div class="card-header bg-info bg-opacity-10 text-info fw-bold">Identificar este equipo</div>
             <div class="card-body">
-                <p class="mb-2">Descarga <a href="{% url 'portal_herramientas' %}">CACD_Identificar_PC.bat</a>, ejecútalo en el equipo, y sube el archivo generado:</p>
+                <p class="mb-2">Descarga el archivo .BAT para este ticket, ejecútalo en el equipo (doble clic, acepta UAC), y el informe se enviará automáticamente:</p>
+                <a href="{% url 'descargar_bat_ticket' orden.pk %}" class="btn btn-info mb-3">
+                    ⬇️ Descargar .BAT para {{ orden.codigo_seguimiento }}
+                </a>
+                <hr>
+                <p class="small text-muted mb-2">O si ya generaste el archivo, súbelo manualmente:</p>
                 <form method="post" action="{% url 'portal_subir_identificacion' orden.pk %}" enctype="multipart/form-data" class="row g-2">
                     {% csrf_token %}
                     <div class="col-md-8">
                         <input type="file" name="archivo_identificacion" class="form-control form-control-sm" accept=".txt" required>
-                        <div class="form-text">Busca CACD_InfoSistema.txt en el Escritorio</div>
+                        <div class="form-text">Busca CACD_InfoSistema_{{ orden.codigo_seguimiento }}.txt en el Escritorio</div>
                     </div>
                     <div class="col-md-4">
                         <button class="btn btn-info btn-sm w-100">Subir informe</button>
@@ -132,7 +134,6 @@
                 </form>
             </div>
         </div>
-        {% endif %}
         {% endif %}
 
         <!-- Motivo -->

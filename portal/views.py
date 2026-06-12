@@ -3,7 +3,7 @@ import os
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from django.http import FileResponse
+from django.http import FileResponse, HttpResponse
 from django.conf import settings
 from clientes.models import Cliente
 from ordenes.models import OrdenServicio, FotoOrden, ComentarioTicket
@@ -214,6 +214,49 @@ def herramientas(request):
 def descargar_script(request):
     ruta = os.path.join(settings.BASE_DIR, 'scripts', 'CACD_Identificar_PC.bat')
     return FileResponse(open(ruta, 'rb'), as_attachment=True, filename='CACD_Identificar_PC.bat')
+
+
+def descargar_bat_ticket(request, pk):
+    orden = get_object_or_404(OrdenServicio, pk=pk)
+    codigo = orden.codigo_seguimiento
+    api_url = 'https://ccespedesdevia1715.pythonanywhere.com/api/equipos/subir-informe/'
+
+    contenido = f"""@echo off
+cd /d "%~dp0"
+title CACD Soluciones - Identificar PC - {codigo}
+
+:: Auto-elevarse como Administrador
+net session >nul 2>&1
+if %errorlevel% neq 0 (
+    powershell start-process -verb runas "%~f0"
+    exit /b
+)
+
+set TICKET={codigo}
+set API_URL={api_url}
+set ARCHIVO=%USERPROFILE%\\Desktop\\CACD_InfoSistema_%TICKET%.txt
+
+echo ========================================
+echo   CACD Soluciones - Identificacion de PC
+echo   Ticket: %TICKET%
+echo ========================================
+echo.
+echo Generando informe del sistema...
+start /wait msinfo32 /report "%ARCHIVO%"
+echo.
+echo Enviando al servidor...
+curl -s -S -f -F "ticket_codigo=%TICKET%" -F "archivo=@%ARCHIVO%" "%API_URL%" >nul 2>&1
+if %errorlevel% equ 0 (
+    echo OK: Informe enviado al ticket %TICKET%
+) else (
+    echo ERROR: No se pudo enviar. Subelo manualmente en:
+    echo   https://ccespedesdevia1715.pythonanywhere.com/portal/seguir/?codigo=%TICKET%
+)
+echo.
+timeout /t 5 /nobreak >nul
+"""
+    return HttpResponse(contenido, content_type='text/plain',
+                        headers={'Content-Disposition': f'attachment; filename="CACD_{codigo}.bat"'})
 
 
 def ticket_pdf(request, pk):
