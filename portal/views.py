@@ -8,6 +8,7 @@ from django.conf import settings
 from clientes.models import Cliente
 from ordenes.models import OrdenServicio, FotoOrden, ComentarioTicket
 from equipos.models import Equipo
+from cotizaciones.models import Cotizacion
 
 
 @login_required
@@ -280,13 +281,34 @@ def comentar_ticket(request, pk):
                 autor = request.user.get_full_name() or request.user.username
                 es_tecnico = True
         else:
-            autor_nombre = request.POST.get('autor', '').strip()
-            if autor_nombre:
-                autor = autor_nombre
+            autor = orden.contacto[:100] if orden.contacto else 'Cliente'
         ComentarioTicket.objects.create(orden=orden, autor=autor, texto=texto, es_tecnico=es_tecnico)
         messages.success(request, 'Comentario agregado.')
     referer = request.META.get('HTTP_REFERER', '/')
     return redirect(referer)
 
 
+@login_required
+def portal_cotizaciones(request):
+    try:
+        cliente = request.user.cliente
+    except Cliente.DoesNotExist:
+        return render(request, 'portal/error.html', {'mensaje': 'Usuario no vinculado a cliente.'})
+    cotizaciones = Cotizacion.objects.filter(cliente=cliente).order_by('-numero')
+    return render(request, 'portal/cotizaciones.html', {'cotizaciones': cotizaciones})
+
+
+@login_required
+def portal_cotizacion_detail(request, numero):
+    try:
+        cliente = request.user.cliente
+    except Cliente.DoesNotExist:
+        return render(request, 'portal/error.html', {'mensaje': 'Usuario no vinculado.'})
+    cotizacion = get_object_or_404(Cotizacion, numero=numero, cliente=cliente)
+    return render(request, 'portal/cotizacion_detail.html', {'cotizacion': cotizacion})
+
+
+def cotizacion_pdf(request, numero):
+    cotizacion = get_object_or_404(Cotizacion, numero=numero)
+    return render(request, 'cotizaciones/cotizacion_pdf.html', {'cotizacion': cotizacion})
 

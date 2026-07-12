@@ -1,7 +1,9 @@
 import datetime
+import os
 import secrets
 import string
 from django.db import models
+from django.conf import settings
 from clientes.models import Cliente
 from equipos.models import Equipo
 from inventario.models import Producto
@@ -56,6 +58,25 @@ class OrdenServicio(models.Model):
     def __str__(self):
         equipo_str = f' - {self.equipo}' if self.equipo else ''
         return f'OS #{self.id} - {self.cliente.razon_social}{equipo_str}'
+
+    @property
+    def informe_html(self) -> str:
+        from .msinfo_parser import informe_to_html
+        if not self.archivo_identificacion:
+            return ''
+        try:
+            path = self.archivo_identificacion.path
+            if os.path.exists(path):
+                with open(path, 'r', encoding='utf-8', errors='replace') as f:
+                    content = f.read()
+                return informe_to_html(content)
+            try:
+                content = self.archivo_identificacion.read().decode('utf-8', errors='replace')
+                return informe_to_html(content)
+            except Exception:
+                return ''
+        except Exception:
+            return ''
 
     def save(self, *args, **kwargs):
         if not self.codigo_seguimiento:

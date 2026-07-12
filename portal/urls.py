@@ -17,4 +17,7 @@ urlpatterns = [
     path('herramientas/', views.herramientas, name='portal_herramientas'),
     path('descargar-script/', views.descargar_script, name='descargar_script'),
     path('descargar-bat/<int:pk>/', views.descargar_bat_ticket, name='descargar_bat_ticket'),
+    path('cotizaciones/', views.portal_cotizaciones, name='portal_cotizaciones'),
+    path('cotizaciones/<int:numero>/', views.portal_cotizacion_detail, name='portal_cotizacion_detail'),
+    path('cotizaciones/<int:numero>/pdf/', views.cotizacion_pdf, name='portal_cotizacion_pdf'),
 ]

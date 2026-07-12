@@ -1,0 +1,42 @@
+{% extends "portal/base_portal.html" %}
+{% block title %}Mis Cotizaciones{% endblock %}
+
+{% block content %}
+<div class="mt-4">
+    <h3 class="mb-3">Mis Cotizaciones</h3>
+    {% if cotizaciones %}
+    <div class="table-responsive">
+        <table class="table table-hover align-middle">
+            <thead class="table-light">
+                <tr>
+                    <th>N°</th>
+                    <th>Fecha</th>
+                    <th>Válida hasta</th>
+                    <th>Estado</th>
+                    <th class="text-end">Total</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for c in cotizaciones %}
+                <tr>
+                    <td><strong>COT-{{ c.numero|stringformat:"05d" }}</strong></td>
+                    <td>{{ c.fecha|date:"d/m/Y" }}</td>
+                    <td>{{ c.valida_hasta|date:"d/m/Y"|default:"—" }}</td>
+                    <td><span class="badge bg-{% if c.estado == 'borrador' %}secondary{% elif c.estado == 'enviada' %}info{% elif c.estado == 'aprobada' %}success{% elif c.estado == 'rechazada' %}danger{% else %}dark{% endif %}">{{ c.get_estado_display }}</span></td>
+                    <td class="text-end fw-bold">$ {{ c.total|floatformat:0 }}</td>
+                    <td class="text-end">
+                        <a href="{% url 'portal_cotizacion_detail' c.numero %}" class="btn btn-sm btn-outline-primary">Ver</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="text-center py-5 text-muted">
+        <p>No tienes cotizaciones aún.</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

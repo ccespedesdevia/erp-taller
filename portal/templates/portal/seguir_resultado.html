@@ -96,17 +96,21 @@
         {% endif %}
 
         <!-- Identificación de PC -->
-        {% if orden.datos_identificacion or orden.archivo_identificacion %}
+        {% if orden.archivo_identificacion %}
+        <div class="card shadow-sm mb-3">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <strong>Identificación del Equipo</strong>
+                <a href="{{ orden.archivo_identificacion.url }}" target="_blank" class="btn btn-sm btn-outline-secondary">📄 Descargar informe original</a>
+            </div>
+            <div class="card-body p-0">
+                {{ orden.informe_html|safe }}
+            </div>
+        </div>
+        {% elif orden.datos_identificacion %}
         <div class="card shadow-sm mb-3">
             <div class="card-header"><strong>Identificación del Equipo</strong></div>
             <div class="card-body">
-                {% if orden.datos_identificacion %}
                 <pre class="mb-0" style="max-height:300px;overflow-y:auto;font-size:0.85rem;">{{ orden.datos_identificacion }}</pre>
-                {% endif %}
-                {% if orden.archivo_identificacion %}
-                <hr class="my-2">
-                <a href="{{ orden.archivo_identificacion.url }}" target="_blank" class="btn btn-sm btn-outline-secondary">📄 Ver informe del cliente</a>
-                {% endif %}
             </div>
         </div>
         {% endif %}
@@ -241,10 +245,7 @@
                 <form method="post" action="{% url 'portal_comentar' orden.pk %}" class="mt-3 border-top pt-3">
                     {% csrf_token %}
                     <div class="row g-2">
-                        <div class="col-md-3">
-                            <input type="text" name="autor" class="form-control form-control-sm" placeholder="Tu nombre (opcional)">
-                        </div>
-                        <div class="col-md-7">
+                        <div class="col-md-10">
                             <input type="text" name="texto" class="form-control form-control-sm" placeholder="Escribe tu mensaje..." required>
                         </div>
                         <div class="col-md-2">
@@ -252,6 +253,7 @@
                         </div>
                     </div>
                 </form>
+                <small class="text-muted ms-1">Comentando como <strong>{{ orden.contacto|default:"Cliente" }}</strong></small>
             </div>
         </div>
         {% endwith %}

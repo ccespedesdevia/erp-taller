@@ -100,17 +100,21 @@
 {% endif %}
 
         <!-- Identificación de PC -->
-        {% if orden.datos_identificacion or orden.archivo_identificacion %}
+        {% if orden.archivo_identificacion %}
+        <div class="card shadow-sm mb-3">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <strong>Identificación del Equipo</strong>
+                <a href="{{ orden.archivo_identificacion.url }}" target="_blank" class="btn btn-sm btn-outline-secondary">📄 Descargar informe original</a>
+            </div>
+            <div class="card-body p-0">
+                {{ orden.informe_html|safe }}
+            </div>
+        </div>
+        {% elif orden.datos_identificacion %}
         <div class="card shadow-sm mb-3">
             <div class="card-header"><strong>Identificación del Equipo</strong></div>
             <div class="card-body">
-                {% if orden.datos_identificacion %}
                 <pre class="mb-0" style="max-height:300px;overflow-y:auto;font-size:0.85rem;">{{ orden.datos_identificacion }}</pre>
-                {% endif %}
-                {% if orden.archivo_identificacion %}
-                <hr class="my-2">
-                <a href="{{ orden.archivo_identificacion.url }}" target="_blank" class="btn btn-sm btn-outline-secondary">📄 Ver informe del cliente</a>
-                {% endif %}
             </div>
         </div>
         {% endif %}

@@ -1,4 +1,5 @@
 from django.contrib import admin
+from django.utils.html import format_html
 from .models import OrdenServicio, RepuestoUsado, FotoOrden, ComentarioTicket
 
 
@@ -48,10 +49,18 @@ class OrdenServicioAdmin(admin.ModelAdmin):
         ('Trabajo', {'fields': ['motivo', 'diagnostico', 'trabajo_realizado', 'software_instalado']}),
         ('Horas y Garantía', {'fields': ['horas_trabajadas', 'estado', 'garantia_fin']}),
         ('Documentos', {'fields': ['orden_compra_cliente', 'orden_compra_archivo', 'oc_aprobada']}),
-        ('Identificación de PC', {'fields': ['datos_identificacion', 'archivo_identificacion']}),
+        ('Identificación de PC', {'fields': ['datos_identificacion', 'archivo_identificacion', 'mostrar_informe']}),
         ('Interno', {'fields': ['notas_internas']}),
     )
-    readonly_fields = ['fecha_ingreso', 'datos_identificacion']
+    readonly_fields = ['fecha_ingreso', 'datos_identificacion', 'mostrar_informe']
+
+
+    @admin.display(description='Informe procesado')
+    def mostrar_informe(self, obj):
+        html = obj.informe_html
+        if not html:
+            return format_html('<span class="text-muted">No hay informe subido o no se pudo procesar.</span>')
+        return format_html(html)
 
 
 admin.site.register(RepuestoUsado)

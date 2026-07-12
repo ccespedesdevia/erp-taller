@@ -9,7 +9,7 @@ class CotizacionTest(TestCase):
 
     def test_crear_cotizacion(self):
         cot = Cotizacion.objects.create(cliente=self.cliente)
-        self.assertEqual(str(cot), f'COT #{cot.id} - Test SA')
+        self.assertEqual(str(cot), f'COT-{cot.numero:05d} - Test SA')
 
     def test_item_subtotal(self):
         cot = Cotizacion.objects.create(cliente=self.cliente)

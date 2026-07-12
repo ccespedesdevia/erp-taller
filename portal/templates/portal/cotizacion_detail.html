@@ -1,0 +1,105 @@
+{% extends "portal/base_portal.html" %}
+{% block title %}COT-{{ cotizacion.numero|stringformat:"05d" }}{% endblock %}
+
+{% block content %}
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'portal_cotizaciones' %}">Mis Cotizaciones</a></li>
+        <li class="breadcrumb-item active">COT-{{ cotizacion.numero|stringformat:"05d" }}</li>
+    </ol>
+</nav>
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h4 class="mb-0">Cotización COT-{{ cotizacion.numero|stringformat:"05d" }}</h4>
+    <div>
+        <a href="{% url 'portal_cotizacion_pdf' cotizacion.numero %}" class="btn btn-outline-danger btn-sm me-2" target="_blank">📄 Descargar PDF</a>
+        <span class="badge fs-6 bg-{% if cotizacion.estado == 'borrador' %}secondary{% elif cotizacion.estado == 'enviada' %}info{% elif cotizacion.estado == 'aprobada' %}success{% elif cotizacion.estado == 'rechazada' %}danger{% else %}dark{% endif %}">
+            {{ cotizacion.get_estado_display }}
+        </span>
+    </div>
+</div>
+
+<!-- Datos -->
+<div class="card shadow-sm mb-3">
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-4">
+                <small class="text-muted d-block">Cliente</small>
+                <strong>{{ cotizacion.cliente.razon_social }}</strong><br>
+                <small class="text-muted">{{ cotizacion.cliente.rut }}</small>
+            </div>
+            <div class="col-md-3">
+                <small class="text-muted d-block">Fecha</small>
+                <strong>{{ cotizacion.fecha|date:"d/m/Y" }}</strong>
+            </div>
+            <div class="col-md-3">
+                <small class="text-muted d-block">Válida hasta</small>
+                <strong>{{ cotizacion.valida_hasta|date:"d/m/Y"|default:"—" }}</strong>
+            </div>
+            <div class="col-md-2">
+                <small class="text-muted d-block">Estado</small>
+                <strong>{{ cotizacion.get_estado_display }}</strong>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Items -->
+<div class="card shadow-sm mb-3">
+    <div class="card-body p-0">
+        <table class="table mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th>#</th>
+                    <th>Descripción</th>
+                    <th class="text-center">Cant.</th>
+                    <th class="text-end">P. Unitario</th>
+                    <th class="text-center">Dto.</th>
+                    <th class="text-end">Total</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in cotizacion.items.all %}
+                <tr>
+                    <td>{{ forloop.counter }}</td>
+                    <td>{{ item.descripcion }}</td>
+                    <td class="text-center">{{ item.cantidad }}</td>
+                    <td class="text-end">$ {{ item.precio_unitario|floatformat:0 }}</td>
+                    <td class="text-center">{% if item.descuento %}{{ item.descuento }}%{% endif %}</td>
+                    <td class="text-end">$ {{ item.subtotal|floatformat:0 }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+            <tfoot>
+                <tr class="fw-bold fs-5">
+                    <td colspan="5" class="text-end">Total neto</td>
+                    <td class="text-end">$ {{ cotizacion.total|floatformat:0 }}</td>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+</div>
+
+{% if cotizacion.notas %}
+<div class="card shadow-sm mb-3">
+    <div class="card-header"><strong>Notas</strong></div>
+    <div class="card-body">{{ cotizacion.notas|linebreaks }}</div>
+</div>
+{% endif %}
+
+<!-- Link público -->
+<div class="card shadow-sm mb-3">
+    <div class="card-header"><strong>Compartir esta cotización</strong></div>
+    <div class="card-body">
+        <p class="small text-muted mb-2">Comparte este link con tu cliente para que vea la cotización y pueda hacer consultas:</p>
+        <div class="input-group">
+            <input type="text" class="form-control" value="{{ request.scheme }}://{{ request.get_host }}{% url 'cotizacion_consultar' cotizacion.numero %}" readonly id="linkPublico">
+            <button class="btn btn-primary" onclick="navigator.clipboard.writeText(document.getElementById('linkPublico').value);this.textContent='Copiado!'">Copiar</button>
+        </div>
+    </div>
+</div>
+
+<div class="mb-3">
+    <a href="{% url 'portal_cotizaciones' %}" class="btn btn-outline-secondary">← Volver a cotizaciones</a>
+</div>
+{% endblock %}
