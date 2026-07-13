@@ -38,5 +38,21 @@
         <p>No tienes cotizaciones aún.</p>
     </div>
     {% endif %}
+
+    {% if cotizaciones.has_other_pages %}
+    <nav>
+        <ul class="pagination justify-content-center">
+            {% if cotizaciones.has_previous %}
+            <li class="page-item"><a class="page-link" href="?page={{ cotizaciones.previous_page_number }}">Anterior</a></li>
+            {% endif %}
+            {% for i in cotizaciones.paginator.page_range %}
+            <li class="page-item {% if cotizaciones.number == i %}active{% endif %}"><a class="page-link" href="?page={{ i }}">{{ i }}</a></li>
+            {% endfor %}
+            {% if cotizaciones.has_next %}
+            <li class="page-item"><a class="page-link" href="?page={{ cotizaciones.next_page_number }}">Siguiente</a></li>
+            {% endif %}
+        </ul>
+    </nav>
+    {% endif %}
 </div>
 {% endblock %}

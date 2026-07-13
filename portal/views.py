@@ -18,14 +18,17 @@ def dashboard(request):
     except Cliente.DoesNotExist:
         return render(request, 'portal/error.html', {'mensaje': 'Tu usuario no está vinculado a ningún cliente. Contacta al administrador.'})
 
-    ordenes = OrdenServicio.objects.filter(cliente=cliente).order_by('-fecha_ingreso')
+    ordenes_list = OrdenServicio.objects.filter(cliente=cliente).order_by('-fecha_ingreso')
+    paginator = Paginator(ordenes_list, 20)
+    page = request.GET.get('page', 1)
+    ordenes = paginator.get_page(page)
 
     context = {
         'cliente': cliente,
         'ordenes': ordenes,
-        'pendientes': ordenes.filter(estado='pendiente').count(),
-        'en_curso': ordenes.filter(estado='en_curso').count(),
-        'completadas': ordenes.filter(estado='completado').count(),
+        'pendientes': ordenes_list.filter(estado='pendiente').count(),
+        'en_curso': ordenes_list.filter(estado='en_curso').count(),
+        'completadas': ordenes_list.filter(estado='completado').count(),
     }
     return render(request, 'portal/dashboard.html', context)
 
@@ -176,8 +179,8 @@ def seguir_ticket(request):
     return render(request, 'portal/seguir_form.html')
 
 
-def subir_oc(request, pk):
-    orden = get_object_or_404(OrdenServicio, pk=pk)
+def subir_oc(request, codigo):
+    orden = get_object_or_404(OrdenServicio, codigo_seguimiento=codigo.upper())
     if orden.estado not in ('pendiente', 'en_curso'):
         messages.error(request, 'No puedes modificar la OC en este estado.')
         return redirect(request.META.get('HTTP_REFERER', '/'))
@@ -199,8 +202,8 @@ def subir_oc(request, pk):
     return redirect(request.META.get('HTTP_REFERER', '/'))
 
 
-def subir_identificacion(request, pk):
-    orden = get_object_or_404(OrdenServicio, pk=pk)
+def subir_identificacion(request, codigo):
+    orden = get_object_or_404(OrdenServicio, codigo_seguimiento=codigo.upper())
     if request.method == 'POST' and request.FILES.get('archivo_identificacion'):
         orden.archivo_identificacion = request.FILES['archivo_identificacion']
         orden.save(update_fields=['archivo_identificacion'])
@@ -217,10 +220,12 @@ def descargar_script(request):
     return FileResponse(open(ruta, 'rb'), as_attachment=True, filename='CACD_Identificar_PC.bat')
 
 
-def descargar_bat_ticket(request, pk):
-    orden = get_object_or_404(OrdenServicio, pk=pk)
+def descargar_bat_ticket(request, codigo):
+    orden = get_object_or_404(OrdenServicio, codigo_seguimiento=codigo.upper())
     codigo = orden.codigo_seguimiento
-    api_url = 'https://ccespedesdevia1715.pythonanywhere.com/api/equipos/subir-informe/'
+    base_url = getattr(settings, 'API_BASE_URL', 'https://ccespedesdevia1715.pythonanywhere.com')
+    api_url = base_url + '/api/equipos/subir-informe/'
+    seguimiento_url = getattr(settings, 'SEGUIMIENTO_URL', base_url)
 
     contenido = f"""@echo off
 cd /d "%~dp0"
@@ -251,7 +256,7 @@ if %errorlevel% equ 0 (
     echo OK: Informe enviado al ticket %TICKET%
 ) else (
     echo ERROR: No se pudo enviar. Subelo manualmente en:
-    echo   https://ccespedesdevia1715.pythonanywhere.com/portal/seguir/?codigo=%TICKET%
+    echo   {seguimiento_url}/portal/seguir/?codigo=%TICKET%
 )
 echo.
 timeout /t 5 /nobreak >nul
@@ -260,17 +265,17 @@ timeout /t 5 /nobreak >nul
                         headers={'Content-Disposition': f'attachment; filename="CACD_{codigo}.bat"'})
 
 
-def ticket_pdf(request, pk):
-    orden = get_object_or_404(OrdenServicio, pk=pk)
+def ticket_pdf(request, codigo):
+    orden = get_object_or_404(OrdenServicio, codigo_seguimiento=codigo.upper())
     return render(request, 'portal/ticket_pdf.html', {'orden': orden})
 
 
-def comentar_ticket(request, pk):
+def comentar_ticket(request, codigo):
     texto = request.POST.get('texto', '').strip()
     if not texto:
         messages.error(request, 'Escribe un mensaje.')
     else:
-        orden = get_object_or_404(OrdenServicio, pk=pk)
+        orden = get_object_or_404(OrdenServicio, codigo_seguimiento=codigo.upper())
         autor = 'Anónimo'
         es_tecnico = False
         if request.user.is_authenticated:
@@ -294,7 +299,10 @@ def portal_cotizaciones(request):
         cliente = request.user.cliente
     except Cliente.DoesNotExist:
         return render(request, 'portal/error.html', {'mensaje': 'Usuario no vinculado a cliente.'})
-    cotizaciones = Cotizacion.objects.filter(cliente=cliente).order_by('-numero')
+    lista = Cotizacion.objects.filter(cliente=cliente).order_by('-numero')
+    paginator = Paginator(lista, 20)
+    page = request.GET.get('page', 1)
+    cotizaciones = paginator.get_page(page)
     return render(request, 'portal/cotizaciones.html', {'cotizaciones': cotizaciones})
 
 

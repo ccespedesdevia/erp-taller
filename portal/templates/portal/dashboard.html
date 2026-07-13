@@ -59,5 +59,22 @@
             </tbody>
         </table>
     </div>
+    {% if ordenes.has_other_pages %}
+    <div class="card-footer">
+        <nav>
+            <ul class="pagination justify-content-center mb-0">
+                {% if ordenes.has_previous %}
+                <li class="page-item"><a class="page-link" href="?page={{ ordenes.previous_page_number }}">Anterior</a></li>
+                {% endif %}
+                {% for i in ordenes.paginator.page_range %}
+                <li class="page-item {% if ordenes.number == i %}active{% endif %}"><a class="page-link" href="?page={{ i }}">{{ i }}</a></li>
+                {% endfor %}
+                {% if ordenes.has_next %}
+                <li class="page-item"><a class="page-link" href="?page={{ ordenes.next_page_number }}">Siguiente</a></li>
+                {% endif %}
+            </ul>
+        </nav>
+    </div>
+    {% endif %}
 </div>
 {% endblock %}

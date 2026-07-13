@@ -10,10 +10,24 @@ def orden_modificada(sender, instance, created, **kwargs):
         notificar_tecnico(instance, 'Nuevo ticket creado')
         notificar_cliente(instance, 'Ticket creado',
                           'Tu solicitud de servicio fue recibida. Pronto te contactaremos.')
-    else:
-        notificar_tecnico(instance, 'Ticket actualizado')
-        notificar_cliente(instance, 'Ticket actualizado',
-                          'Tu ticket fue actualizado por el técnico. Ingresa para ver los cambios.')
+        return
+
+    try:
+        old = OrdenServicio.objects.get(pk=instance.pk)
+    except OrdenServicio.DoesNotExist:
+        return
+
+    cambios = []
+    for campo in ('estado', 'tecnico', 'diagnostico', 'trabajo_realizado'):
+        if getattr(old, campo) != getattr(instance, campo):
+            cambios.append(campo)
+
+    if not cambios:
+        return
+
+    notificar_tecnico(instance, f'Ticket {instance.codigo_seguimiento} actualizado')
+    notificar_cliente(instance, 'Ticket actualizado',
+                      'Tu ticket fue actualizado. Ingresa para ver los cambios.')
 
 
 @receiver(post_save, sender=ComentarioTicket)

@@ -24,14 +24,14 @@ class CotizacionConsultaInline(admin.TabularInline):
 
 @admin.register(Cotizacion)
 class CotizacionAdmin(admin.ModelAdmin):
-    list_display = ['codigo', 'cliente', 'fecha', 'valida_hasta', 'estado_coloreado', 'total_formateado', 'num_consultas']
+    list_display = ['codigo', 'cliente', 'fecha', 'valida_hasta', 'estado_coloreado', 'total_formateado', 'num_consultas', 'link_publico']
     list_filter = ['estado', 'fecha']
     search_fields = ['numero', 'cliente__razon_social']
     inlines = [ItemCotizacionInline, CotizacionConsultaInline]
     readonly_fields = ['numero', 'total', 'created_at', 'updated_at', 'link_publico']
     fieldsets = (
         ('Información general', {'fields': ['numero', 'cliente', 'orden', 'fecha', 'valida_hasta', 'estado']}),
-        ('Documentos', {'fields': ['archivo_oc_cliente', 'link_publico']}),
+        ('Documentos y previsualización', {'fields': ['archivo_oc_cliente', 'link_publico']}),
         ('Notas', {'fields': ['notas']}),
         ('Totales', {'fields': ['total']}),
     )
@@ -61,11 +61,15 @@ class CotizacionAdmin(admin.ModelAdmin):
     num_consultas.short_description = 'Consultas'
 
     def link_publico(self, obj):
-        if obj.numero:
-            url = f'/cotizaciones/{obj.numero}/consultar/'
-            return format_html('<a href="{}" target="_blank">🔗 {}</a>', url, url)
-        return '—'
-    link_publico.short_description = 'Link público'
+        n = obj.numero or obj.id
+        consultar_url = f'/cotizaciones/{n}/consultar/'
+        pdf_url = f'/portal/cotizaciones/{n}/pdf/'
+        return format_html(
+            '<a href="{}" target="_blank">🔗 Pública</a> &nbsp;|&nbsp; '
+            '<a href="{}" target="_blank">📄 PDF</a>',
+            consultar_url, pdf_url
+        )
+    link_publico.short_description = 'Previsualizar'
 
     def marcar_enviada(self, request, queryset):
         queryset.update(estado='enviada')

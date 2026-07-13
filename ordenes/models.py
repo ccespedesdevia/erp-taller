@@ -106,6 +106,18 @@ class RepuestoUsado(models.Model):
     def total_neto(self):
         return self.cantidad * self.precio_unitario
 
+    def save(self, *args, **kwargs):
+        if not self.pk:
+            self.producto.stock_actual -= self.cantidad
+            self.producto.save(update_fields=['stock_actual'])
+        super().save(*args, **kwargs)
+
+    def delete(self, *args, **kwargs):
+        if self.pk:
+            self.producto.stock_actual += self.cantidad
+            self.producto.save(update_fields=['stock_actual'])
+        super().delete(*args, **kwargs)
+
 
 class FotoOrden(models.Model):
     orden = models.ForeignKey(OrdenServicio, on_delete=models.CASCADE, related_name='fotos', verbose_name='Orden')

@@ -26,3 +26,4 @@ _tecno = os.environ.get('NOTIFICACIONES_EMAIL_TECNICO', '')
 NOTIFICACIONES_EMAIL_TECNICO = [_tecno] if _tecno else ([EMAIL_HOST_USER] if EMAIL_HOST_USER else [])
 
 SEGUIMIENTO_URL = 'https://' + PA_DOMAIN
+API_BASE_URL = 'https://' + PA_DOMAIN
