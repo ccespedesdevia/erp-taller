@@ -20,4 +20,8 @@ urlpatterns = [
     path('cotizaciones/', views.portal_cotizaciones, name='portal_cotizaciones'),
     path('cotizaciones/<int:numero>/', views.portal_cotizacion_detail, name='portal_cotizacion_detail'),
     path('cotizaciones/<int:numero>/pdf/', views.cotizacion_pdf, name='portal_cotizacion_pdf'),
+    path('chat/', views.chat_inicio, name='portal_chat_inicio'),
+    path('chat/<uuid:session_id>/', views.chat_ver, name='portal_chat_ver'),
+    path('chat/<uuid:session_id>/api/', views.chat_api, name='portal_chat_api'),
+    path('chat/<uuid:session_id>/crear/', views.chat_crear_ticket, name='portal_chat_crear'),
 ]

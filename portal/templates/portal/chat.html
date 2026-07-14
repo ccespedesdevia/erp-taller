@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat con IA - CACD Soluciones</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f0f2f5; height: 100vh; display: flex; flex-direction: column; }
+        .header { background: #1a73e8; color: #fff; padding: 16px 20px; display: flex; align-items: center; gap: 12px; }
+        .header a { color: #fff; text-decoration: none; font-size: 20px; }
+        .header h1 { font-size: 18px; font-weight: 500; }
+        .header .subtitle { font-size: 12px; opacity: 0.85; }
+        .chat-container { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 8px; }
+        .message { max-width: 80%; padding: 10px 14px; border-radius: 18px; font-size: 14px; line-height: 1.5; word-wrap: break-word; animation: fadeIn 0.3s; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+        .message.user { align-self: flex-end; background: #1a73e8; color: #fff; border-bottom-right-radius: 4px; }
+        .message.assistant { align-self: flex-start; background: #fff; color: #222; border-bottom-left-radius: 4px; box-shadow: 0 1px 2px rgba(0,0,0,0.1); }
+        .message.system { align-self: center; font-style: italic; color: #666; font-size: 12px; }
+        .message .time { font-size: 10px; opacity: 0.6; margin-top: 4px; text-align: right; }
+        .typing { align-self: flex-start; background: #fff; color: #222; border-radius: 18px; padding: 12px 16px; box-shadow: 0 1px 2px rgba(0,0,0,0.1); display: flex; gap: 4px; }
+        .typing span { width: 8px; height: 8px; background: #999; border-radius: 50%; animation: bounce 1.4s infinite ease-in-out; }
+        .typing span:nth-child(2) { animation-delay: 0.2s; }
+        .typing span:nth-child(3) { animation-delay: 0.4s; }
+        @keyframes bounce { 0%, 80%, 100% { transform: scale(0); } 40% { transform: scale(1); } }
+        .input-area { padding: 12px 16px; background: #fff; border-top: 1px solid #e0e0e0; display: flex; gap: 8px; align-items: center; }
+        .input-area input { flex: 1; padding: 10px 16px; border: 1px solid #ddd; border-radius: 24px; font-size: 14px; outline: none; }
+        .input-area input:focus { border-color: #1a73e8; }
+        .input-area button { background: #1a73e8; color: #fff; border: none; border-radius: 50%; width: 40px; height: 40px; cursor: pointer; font-size: 18px; display: flex; align-items: center; justify-content: center; }
+        .input-area button:disabled { opacity: 0.5; cursor: not-allowed; }
+        .confirm-card { background: #fff; border-radius: 12px; padding: 20px; margin: 8px 0; box-shadow: 0 2px 8px rgba(0,0,0,0.1); text-align: center; }
+        .confirm-card h3 { color: #1a73e8; margin-bottom: 8px; }
+        .confirm-card p { color: #555; font-size: 14px; margin-bottom: 4px; }
+        .confirm-card .btn { display: inline-block; padding: 10px 24px; border-radius: 24px; border: none; cursor: pointer; font-size: 14px; margin: 8px 4px; }
+        .btn-primary { background: #1a73e8; color: #fff; }
+        .btn-secondary { background: #e0e0e0; color: #333; }
+        .btn-success { background: #34a853; color: #fff; }
+        .result-card { text-align: center; padding: 40px 20px; }
+        .result-card .codigo { font-size: 32px; font-weight: 700; color: #1a73e8; letter-spacing: 2px; margin: 16px 0; }
+        .result-card .links { margin-top: 20px; }
+        .result-card .links a { color: #1a73e8; text-decoration: none; margin: 0 12px; font-size: 14px; }
+        .error-msg { color: #d93025; font-size: 13px; text-align: center; padding: 8px; }
+        @media (max-width: 768px) { .message { max-width: 90%; } }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <a href="/portal/" title="Volver">&larr;</a>
+        <div>
+            <h1>Chat CACD Soluciones</h1>
+            <div class="subtitle">Asistente virtual Sofia</div>
+        </div>
+    </div>
+    <div class="chat-container" id="chatContainer"></div>
+    <div class="input-area" id="inputArea">
+        <input type="text" id="mensajeInput" placeholder="Escribe tu mensaje..." autofocus>
+        <button id="sendBtn" onclick="enviarMensaje()">&uarr;</button>
+    </div>
+
+    <script>
+        const sessionId = '{{ session.session_id }}';
+        const chatContainer = document.getElementById('chatContainer');
+        const mensajeInput = document.getElementById('mensajeInput');
+        const sendBtn = document.getElementById('sendBtn');
+        const inputArea = document.getElementById('inputArea');
+
+        let esperandoConfirmacion = false;
+        let datosTicket = null;
+
+        function addMessage(content, role) {
+            const div = document.createElement('div');
+            div.className = 'message ' + role;
+            const now = new Date();
+            const time = now.getHours().toString().padStart(2,'0') + ':' + now.getMinutes().toString().padStart(2,'0');
+            div.innerHTML = content.replace(/\n/g, '<br>') + '<div class="time">' + time + '</div>';
+            chatContainer.appendChild(div);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+
+        function showTyping() {
+            const div = document.createElement('div');
+            div.className = 'typing';
+            div.id = 'typingIndicator';
+            div.innerHTML = '<span></span><span></span><span></span>';
+            chatContainer.appendChild(div);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+
+        function hideTyping() {
+            const el = document.getElementById('typingIndicator');
+            if (el) el.remove();
+        }
+
+        async function enviarMensaje() {
+            const texto = mensajeInput.value.trim();
+            if (!texto || esperandoConfirmacion) return;
+
+            mensajeInput.value = '';
+            addMessage(texto, 'user');
+            showTyping();
+            sendBtn.disabled = true;
+            mensajeInput.disabled = true;
+
+            try {
+                const resp = await fetch('/portal/chat/' + sessionId + '/api/', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json', 'X-CSRFToken': '{{ csrf_token }}'},
+                    body: JSON.stringify({mensaje: texto}),
+                });
+                const data = await resp.json();
+
+                hideTyping();
+
+                if (data.error) {
+                    addMessage('⚠️ ' + data.error, 'system');
+                    sendBtn.disabled = false;
+                    mensajeInput.disabled = false;
+                    return;
+                }
+
+                if (data.confirmar) {
+                    datosTicket = data.datos;
+                    addMessage('He resumido la información. Revisa los datos antes de crear el ticket:', 'assistant');
+                    const card = document.createElement('div');
+                    card.className = 'confirm-card';
+                    let html = '<h3>Resumen del Ticket</h3>';
+                    const d = data.datos;
+                    html += '<p><strong>Nombre:</strong> ' + (d.nombre || '—') + '</p>';
+                    html += '<p><strong>Contacto:</strong> ' + (d.email || '') + (d.telefono ? ' | ' + d.telefono : '') + '</p>';
+                    html += '<p><strong>Empresa:</strong> ' + (d.empresa || '—') + '</p>';
+                    html += '<p><strong>Equipo:</strong> ' + (d.marca_equipo || '') + ' ' + (d.modelo_equipo || '') + ' (' + (d.tipo_equipo || '—') + ')</p>';
+                    html += '<p><strong>Problema:</strong> ' + (d.problema || '—') + '</p>';
+                    html += '<p><strong>Urgencia:</strong> ' + (d.urgencia || '—') + '</p>';
+                    html += '<div style="margin-top:12px">';
+                    html += '<button class="btn btn-primary" onclick="crearTicket()">✅ Crear Ticket</button>';
+                    html += '<button class="btn btn-secondary" onclick="cancelarTicket()">✏️ Corregir</button>';
+                    html += '</div>';
+                    card.innerHTML = html;
+                    chatContainer.appendChild(card);
+                    chatContainer.scrollTop = chatContainer.scrollHeight;
+                    esperandoConfirmacion = true;
+                    inputArea.style.display = 'none';
+                } else {
+                    addMessage(data.respuesta, 'assistant');
+                }
+            } catch (e) {
+                hideTyping();
+                addMessage('⚠️ Error de conexión. Intenta de nuevo.', 'system');
+            }
+
+            sendBtn.disabled = false;
+            mensajeInput.disabled = false;
+            mensajeInput.focus();
+        }
+
+        async function crearTicket() {
+            sendBtn.disabled = true;
+            showTyping();
+            try {
+                const resp = await fetch('/portal/chat/' + sessionId + '/crear/', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json', 'X-CSRFToken': '{{ csrf_token }}'},
+                });
+                const data = await resp.json();
+                hideTyping();
+                if (data.error) {
+                    addMessage('⚠️ Error al crear ticket: ' + data.error, 'system');
+                    sendBtn.disabled = false;
+                    return;
+                }
+                chatContainer.innerHTML = '';
+                const resultDiv = document.createElement('div');
+                resultDiv.className = 'result-card';
+                resultDiv.innerHTML = '<h2>✅ Ticket Creado</h2>' +
+                    '<p>Tu código de seguimiento es:</p>' +
+                    '<div class="codigo">' + data.codigo + '</div>' +
+                    '<div class="links">' +
+                    '<a href="/portal/seguir/?codigo=' + data.codigo + '">🔍 Ver estado</a>' +
+                    '<a href="/portal/">🏠 Volver al inicio</a>' +
+                    '</div>';
+                chatContainer.appendChild(resultDiv);
+            } catch (e) {
+                hideTyping();
+                addMessage('⚠️ Error al crear el ticket. Intenta de nuevo.', 'system');
+                sendBtn.disabled = false;
+            }
+        }
+
+        function cancelarTicket() {
+            esperandoConfirmacion = false;
+            datosTicket = null;
+            inputArea.style.display = 'flex';
+            const confirmCard = document.querySelector('.confirm-card');
+            if (confirmCard) confirmCard.remove();
+            addMessage('Cuéntame qué falta o qué corregir.', 'assistant');
+            mensajeInput.focus();
+        }
+
+        mensajeInput.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') enviarMensaje();
+        });
+    </script>
+</body>
+</html>

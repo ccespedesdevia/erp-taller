@@ -1,3 +1,4 @@
+import os
 from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -18,6 +19,7 @@ INSTALLED_APPS = [
     'ordenes',
     'cotizaciones',
     'activos',
+    'django.contrib.humanize',
     'dashboard',
     'portal',
 ]
@@ -76,6 +78,9 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 LOGIN_URL = '/admin/login/'
 LOGIN_REDIRECT_URL = '/admin/'
+
+# Google Gemini API (usar variable de entorno en producción)
+GEMINI_API_KEY = os.getenv('GEMINI_API_KEY', '')
 
 # Email (desarrollo — en consola)
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'

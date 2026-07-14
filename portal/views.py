@@ -3,12 +3,15 @@ import os
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from django.http import FileResponse, HttpResponse
+from django.http import FileResponse, HttpResponse, JsonResponse
 from django.conf import settings
 from clientes.models import Cliente
 from ordenes.models import OrdenServicio, FotoOrden, ComentarioTicket
 from equipos.models import Equipo
 from cotizaciones.models import Cotizacion
+import json
+from .models import ChatSession, ChatMessage
+from .services import gemini_service
 
 
 @login_required
@@ -319,4 +322,126 @@ def portal_cotizacion_detail(request, numero):
 def cotizacion_pdf(request, numero):
     cotizacion = get_object_or_404(Cotizacion, numero=numero)
     return render(request, 'cotizaciones/cotizacion_pdf.html', {'cotizacion': cotizacion})
+
+
+def chat_inicio(request):
+    session = ChatSession.objects.create()
+    greeting = gemini_service.enviar_mensaje([], "Inicia la conversación")
+    ChatMessage.objects.create(session=session, role='assistant', content=greeting)
+    return render(request, 'portal/chat.html', {'session': session})
+
+
+def chat_ver(request, session_id):
+    session = get_object_or_404(ChatSession, pk=session_id)
+    return render(request, 'portal/chat.html', {'session': session})
+
+
+def chat_api(request, session_id):
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Método no permitido'}, status=405)
+
+    session = get_object_or_404(ChatSession, pk=session_id)
+    data = json.loads(request.body)
+    mensaje = data.get('mensaje', '').strip()
+
+    if not mensaje:
+        return JsonResponse({'error': 'Mensaje vacío'}, status=400)
+
+    if session.mensajes.count() > 100:
+        return JsonResponse({'error': 'Límite de mensajes alcanzado.'}, status=400)
+
+    ChatMessage.objects.create(session=session, role='user', content=mensaje)
+
+    try:
+        historial = list(session.mensajes.all().order_by('created_at'))
+        respuesta = gemini_service.enviar_mensaje(historial[:-1], mensaje)
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+
+    ChatMessage.objects.create(session=session, role='assistant', content=respuesta)
+
+    if respuesta.strip() == 'CONFIRMAR':
+        try:
+            datos = gemini_service.extraer_datos(historial)
+            session.datos_extraidos = datos
+            session.nombre = datos.get('nombre', '')
+            session.email = datos.get('email', '')
+            session.telefono = datos.get('telefono', '')
+            session.empresa = datos.get('empresa', '')
+            session.save()
+            return JsonResponse({'respuesta': respuesta, 'confirmar': True, 'datos': datos})
+        except Exception as e:
+            return JsonResponse({'respuesta': respuesta, 'confirmar': False, 'error_extraccion': str(e)})
+
+    return JsonResponse({'respuesta': respuesta, 'confirmar': False})
+
+
+def chat_crear_ticket(request, session_id):
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Método no permitido'}, status=405)
+
+    session = get_object_or_404(ChatSession, pk=session_id)
+    if session.orden_creada:
+        return JsonResponse({'codigo': session.orden_creada.codigo_seguimiento})
+
+    datos = session.datos_extraidos
+    if not datos:
+        return JsonResponse({'error': 'No hay datos para crear el ticket.'}, status=400)
+
+    rut = datos.get('rut', '')
+    nombre = datos.get('nombre', 'Cliente sin nombre')
+    email = datos.get('email', '')
+    telefono = datos.get('telefono', '')
+    empresa = datos.get('empresa', '')
+
+    if not rut:
+        rut = f'SIN-RUT-{session.session_id.hex[:8].upper()}'
+
+    cliente, _ = Cliente.objects.get_or_create(
+        rut=rut,
+        defaults={
+            'razon_social': empresa or nombre,
+            'email': email,
+            'telefono': telefono,
+        },
+    )
+
+    marca = datos.get('marca_equipo', '')
+    modelo = datos.get('modelo_equipo', '')
+    tipo_equipo = datos.get('tipo_equipo', 'otro')
+    equipo = None
+    if marca or modelo:
+        equipo = Equipo.objects.create(
+            cliente=cliente,
+            tipo=tipo_equipo if tipo_equipo in dict(Equipo.TIPO_CHOICES) else 'otro',
+            marca=marca or 'Sin especificar',
+            modelo=modelo or 'Sin especificar',
+        )
+
+    problema = datos.get('problema', '')
+    urgencia = datos.get('urgencia', 'media')
+
+    orden = OrdenServicio.objects.create(
+        cliente=cliente,
+        equipo=equipo,
+        motivo=problema,
+        contacto=nombre,
+        telefono=telefono,
+        email_contacto=email,
+        empresa=empresa,
+        estado='pendiente',
+    )
+
+    session.orden_creada = orden
+    session.estado = 'ticket_creado'
+    session.save()
+
+    ComentarioTicket.objects.create(
+        orden=orden,
+        autor='Sofia (IA)',
+        texto=f'Ticket creado vía chat IA.\n\nProblema: {problema}\nUrgencia: {urgencia}\nEquipo: {marca} {modelo}',
+        es_tecnico=True,
+    )
+
+    return JsonResponse({'codigo': orden.codigo_seguimiento})
 
