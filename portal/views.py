@@ -10,6 +10,7 @@ from ordenes.models import OrdenServicio, FotoOrden, ComentarioTicket
 from equipos.models import Equipo
 from cotizaciones.models import Cotizacion
 import json
+from django.views.decorators.csrf import csrf_exempt
 from .models import ChatSession, ChatMessage
 from .services import gemini_service
 
@@ -336,6 +337,7 @@ def chat_ver(request, session_id):
     return render(request, 'portal/chat.html', {'session': session})
 
 
+@csrf_exempt
 def chat_api(request, session_id):
     if request.method != 'POST':
         return JsonResponse({'error': 'Método no permitido'}, status=405)
@@ -376,6 +378,7 @@ def chat_api(request, session_id):
     return JsonResponse({'respuesta': respuesta, 'confirmar': False})
 
 
+@csrf_exempt
 def chat_crear_ticket(request, session_id):
     if request.method != 'POST':
         return JsonResponse({'error': 'Método no permitido'}, status=405)
