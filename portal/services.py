@@ -22,7 +22,7 @@ Sé amable, profesional, y conversacional. No des consejos técnicos ni diagnós
 
 
 class GeminiService:
-    API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent"
+    API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent"
 
     def __init__(self):
         self.api_key = settings.GEMINI_API_KEY
