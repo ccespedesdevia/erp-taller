@@ -22,6 +22,7 @@ INSTALLED_APPS = [
     'django.contrib.humanize',
     'dashboard',
     'portal',
+    'sitio',
 ]
 
 MIDDLEWARE = [

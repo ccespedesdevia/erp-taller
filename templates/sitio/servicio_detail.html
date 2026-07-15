@@ -1,0 +1,63 @@
+{% extends 'sitio/base.html' %}
+{% block content %}
+<div class="servicio-hero">
+    <span class="material-symbols-rounded" style="font-size: 48px; margin-bottom: 16px; display: block; opacity: 0.8;">{{ servicio.icono }}</span>
+    <h1>{{ servicio.nombre }}</h1>
+    <p>{{ servicio.descripcion_corta }}</p>
+</div>
+<section class="services" style="padding-top: 0;">
+    <div class="services-container">
+        <div class="prose" style="padding: 80px 16px;">
+            {% if servicio.contenido %}
+                {{ servicio.contenido|safe }}
+            {% else %}
+                <p style="text-align:center;color:rgba(26,26,26,0.5);">Contenido próximo a publicar.</p>
+            {% endif %}
+        </div>
+        {% if servicio.lista_beneficios %}
+        <div style="max-width: 768px; margin: 0 auto 80px; padding: 0 16px;">
+            <h3 style="font-size: 24px; margin-bottom: 24px; text-align: center;">Beneficios</h3>
+            <div style="display: grid; gap: 16px;">
+                {% for b in servicio.lista_beneficios %}
+                <div style="display: flex; align-items: center; gap: 12px; padding: 16px; background: white; border-radius: 8px; border: 1px solid #e5e7eb;">
+                    <span style="color: #00b894; font-weight: bold;">✓</span>
+                    <span style="font-size: 15px; color: rgba(26,26,26,0.8);">{{ b }}</span>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</section>
+
+{% if otros %}
+<section class="testimonials">
+    <div class="testimonials-container">
+        <div class="section-header">
+            <h2>Otros Servicios</h2>
+            <p>Conoce nuestra oferta completa de soluciones TI.</p>
+        </div>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px;">
+            {% for o in otros %}
+            <a href="{% url 'sitio_servicio' o.slug %}" class="portal-card">
+                <div class="portal-icon" style="background: {{ o.color_gradiente }};">
+                    <span class="material-symbols-rounded">{{ o.icono }}</span>
+                </div>
+                <h3>{{ o.nombre }}</h3>
+                <p>{{ o.descripcion_corta }}</p>
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endif %}
+
+<section class="cta-section">
+    <h2>¿Necesitas este servicio?</h2>
+    <p>Agenda una asesoría gratuita con nuestros expertos.</p>
+    <button class="btn-primary open-modal-btn" style="background: white; color: #0052cc;">
+        Solicitar Asesoría
+        <span class="material-symbols-rounded" style="font-size: 18px;">arrow_forward</span>
+    </button>
+</section>
+{% endblock %}

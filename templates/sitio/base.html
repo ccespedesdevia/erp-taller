@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}{{ meta.title }}{% endblock %}</title>
+    <meta name="description" content="{% block description %}{{ meta.description }}{% endblock %}">
+    <meta property="og:title" content="{{ meta.title }}">
+    <meta property="og:description" content="{{ meta.description }}">
+    <meta property="og:image" content="{{ meta.image }}">
+    <meta property="og:type" content="website">
+    <meta name="twitter:card" content="summary_large_image">
+    <link rel="canonical" href="https://www.cacdsoluciones.com{{ request.path }}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.tailwindcss.com">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0">
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "Organization",
+        "name": "CACD Soluciones",
+        "url": "https://www.cacdsoluciones.com",
+        "logo": "https://www.cacdsoluciones.com/logo.png",
+        "contactPoint": {
+            "@type": "ContactPoint",
+            "telephone": "+56-9-4399-6681",
+            "contactType": "customer service",
+            "availableLanguage": ["Spanish"]
+        },
+        "address": {
+            "@type": "PostalAddress",
+            "addressLocality": "Santiago",
+            "addressCountry": "CL"
+        }
+    }
+    </script>
+    {% block extra_head %}{% endblock %}
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', sans-serif; color: #1a1a1a; background: #ffffff; }
+        h1, h2, h3, h4, h5, h6 { font-family: 'Poppins', sans-serif; font-weight: 700; }
+        .emergency-banner { background: #dc2626; color: white; padding: 12px 16px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px; }
+        .emergency-banner-text { display: flex; align-items: center; gap: 12px; font-size: 14px; font-weight: 600; }
+        .emergency-btn { background: white; color: #dc2626; padding: 8px 16px; border-radius: 4px; font-weight: 600; text-decoration: none; font-size: 14px; display: flex; align-items: center; gap: 8px; cursor: pointer; border: none; transition: background 0.3s; }
+        .emergency-btn:hover { background: #f3f4f6; }
+        header { position: fixed; top: 0; left: 0; right: 0; z-index: 50; background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(12px); border-bottom: 1px solid #e5e7eb; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1); }
+        .header-container { max-width: 1280px; margin: 0 auto; padding: 0 16px; display: flex; align-items: center; justify-content: space-between; height: 64px; }
+        .logo { display: flex; align-items: center; gap: 8px; text-decoration: none; }
+        .logo-icon { width: 32px; height: 32px; background: #0052cc; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 18px; }
+        .logo-text { font-weight: bold; font-size: 18px; color: #1a1a1a; display: none; }
+        @media (min-width: 640px) { .logo-text { display: inline; } }
+        nav { display: none; gap: 32px; align-items: center; }
+        @media (min-width: 768px) { nav { display: flex; } }
+        nav a { font-size: 14px; font-weight: 500; color: rgba(26, 26, 26, 0.8); text-decoration: none; transition: color 0.2s; }
+        nav a:hover { color: #0052cc; }
+        .header-actions { display: flex; align-items: center; gap: 16px; }
+        .support-link { display: none; align-items: center; gap: 8px; font-size: 14px; font-weight: 500; color: #0052cc; text-decoration: none; transition: color 0.2s; }
+        @media (min-width: 640px) { .support-link { display: flex; } }
+        .support-link:hover { color: #0041a3; }
+        .cta-btn { background: #0052cc; color: white; padding: 8px 16px; border-radius: 6px; font-weight: 600; text-decoration: none; font-size: 14px; cursor: pointer; border: none; transition: background 0.3s; display: none; }
+        @media (min-width: 640px) { .cta-btn { display: inline-block; } }
+        .cta-btn:hover { background: #0041a3; }
+        .services { padding: 80px 16px; background: linear-gradient(to bottom, white, rgba(242, 242, 242, 0.3)); }
+        .services-container { max-width: 1280px; margin: 0 auto; }
+        .section-header { text-align: center; margin-bottom: 64px; }
+        .section-header h2 { font-size: 36px; margin-bottom: 16px; color: #1a1a1a; }
+        .section-header p { font-size: 18px; color: rgba(26, 26, 26, 0.7); max-width: 560px; margin: 0 auto; }
+        .services-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 32px; }
+        .service-card { background: white; border: 1px solid #e5e7eb; border-radius: 12px; overflow: hidden; transition: all 0.3s; cursor: pointer; text-decoration: none; display: block; color: inherit; }
+        .service-card:hover { box-shadow: 0 12px 24px rgba(0, 0, 0, 0.1); transform: translateY(-8px); }
+        .service-image { width: 100%; height: 192px; background: linear-gradient(135deg, rgba(0, 82, 204, 0.1), rgba(0, 184, 148, 0.1)); position: relative; overflow: hidden; }
+        .service-image img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.3s; }
+        .service-card:hover .service-image img { transform: scale(1.1); }
+        .service-icon { position: absolute; top: 16px; right: 16px; width: 48px; height: 48px; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: white; font-size: 24px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2); }
+        .service-content { padding: 24px; }
+        .service-content h3 { font-size: 20px; margin-bottom: 8px; color: #1a1a1a; }
+        .service-content p { font-size: 14px; color: rgba(26, 26, 26, 0.7); margin-bottom: 16px; line-height: 1.6; }
+        .service-link { color: #0052cc; text-decoration: none; font-weight: 500; font-size: 14px; cursor: pointer; transition: color 0.2s; }
+        .service-link:hover { color: #0041a3; }
+        .pricing { padding: 80px 16px; background: linear-gradient(to bottom, rgba(242, 242, 242, 0.3), white); }
+        .pricing-container { max-width: 1280px; margin: 0 auto; }
+        .pricing-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 32px; margin-top: 48px; }
+        .pricing-card { background: white; border: 1px solid #e5e7eb; border-radius: 12px; padding: 32px; transition: all 0.3s; display: flex; flex-direction: column; }
+        .pricing-card.featured { border: 2px solid #0052cc; box-shadow: 0 12px 24px rgba(0, 82, 204, 0.15); }
+        .pricing-badge { display: inline-block; background: #0052cc; color: white; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; margin-bottom: 16px; width: fit-content; }
+        .pricing-name { font-size: 24px; font-weight: bold; margin-bottom: 8px; color: #1a1a1a; }
+        .pricing-description { font-size: 14px; color: rgba(26, 26, 26, 0.6); margin-bottom: 24px; }
+        .pricing-amount { font-size: 32px; font-weight: bold; color: #0052cc; margin-bottom: 8px; }
+        .pricing-period { font-size: 14px; color: rgba(26, 26, 26, 0.6); margin-bottom: 24px; }
+        .pricing-features { list-style: none; margin-bottom: 32px; flex: 1; }
+        .pricing-features li { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 12px; font-size: 14px; color: rgba(26, 26, 26, 0.7); }
+        .pricing-features li::before { content: '✓'; color: #00b894; font-weight: bold; flex-shrink: 0; }
+        .pricing-btn { background: #f3f4f6; color: #1a1a1a; padding: 12px 24px; border-radius: 6px; font-weight: 600; text-decoration: none; font-size: 14px; cursor: pointer; border: none; transition: all 0.3s; text-align: center; }
+        .pricing-card.featured .pricing-btn { background: #0052cc; color: white; }
+        .pricing-btn:hover { transform: translateY(-2px); }
+        .cta-section { padding: 80px 16px; background: linear-gradient(135deg, #0052cc, #003d99); color: white; text-align: center; }
+        .cta-section h2 { font-size: 36px; margin-bottom: 16px; }
+        .cta-section p { font-size: 18px; margin-bottom: 32px; opacity: 0.9; max-width: 560px; margin-left: auto; margin-right: auto; }
+        .faq { padding: 80px 16px; background: white; }
+        .faq-container { max-width: 768px; margin: 0 auto; }
+        .faq-item { border-bottom: 1px solid #e5e7eb; padding: 24px 0; }
+        .faq-item:last-child { border-bottom: none; }
+        .faq-question { font-weight: 600; color: #1a1a1a; cursor: pointer; display: flex; justify-content: space-between; align-items: center; font-size: 16px; transition: color 0.2s; }
+        .faq-question:hover { color: #0052cc; }
+        .faq-answer { display: none; margin-top: 16px; color: rgba(26, 26, 26, 0.7); line-height: 1.6; font-size: 14px; }
+        .faq-answer.active { display: block; }
+        footer { background: #1a1a1a; color: white; padding: 64px 16px 32px; }
+        .footer-container { max-width: 1280px; margin: 0 auto; }
+        .footer-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 32px; margin-bottom: 48px; }
+        .footer-section h4 { font-size: 16px; margin-bottom: 16px; font-weight: 600; }
+        .footer-section ul { list-style: none; }
+        .footer-section li { margin-bottom: 12px; }
+        .footer-section a { color: rgba(255, 255, 255, 0.6); text-decoration: none; font-size: 14px; transition: color 0.2s; }
+        .footer-section a:hover { color: #0052cc; }
+        .footer-bottom { border-top: 1px solid rgba(255, 255, 255, 0.1); padding-top: 32px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px; }
+        .footer-bottom p { font-size: 14px; color: rgba(255, 255, 255, 0.6); }
+        .portal-card { background: white; border: 1px solid #e5e7eb; border-radius: 12px; padding: 24px; text-align: center; transition: box-shadow 0.3s; display: block; text-decoration: none; color: inherit; }
+        .portal-card:hover { box-shadow: 0 12px 24px rgba(0, 0, 0, 0.1); }
+        .portal-icon { width: 48px; height: 48px; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: white; font-size: 24px; margin: 0 auto 16px; }
+        .portal-card h3 { font-size: 16px; margin-bottom: 8px; color: #1a1a1a; }
+        .portal-card p { font-size: 13px; color: rgba(26, 26, 26, 0.6); }
+        .portal-btn { background: #0052cc; color: white; padding: 12px 24px; border-radius: 6px; font-weight: 600; text-decoration: none; font-size: 14px; cursor: pointer; border: none; transition: background 0.3s; display: inline-block; margin-top: 16px; }
+        .portal-btn:hover { background: #0041a3; }
+        .material-symbols-rounded { font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+        .toast { position: fixed; bottom: 90px; right: 20px; background: #065f46; color: white; padding: 14px 20px; border-radius: 10px; box-shadow: 0 8px 24px rgba(0,0,0,0.15); transform: translateY(100px); opacity: 0; transition: all 0.4s ease; z-index: 200; max-width: 340px; font-size: 14px; }
+        .toast.show { transform: translateY(0); opacity: 1; }
+        .toast.error { background: #991b1b; }
+        .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 100; align-items: center; justify-content: center; backdrop-filter: blur(4px); }
+        .modal-overlay.open { display: flex; }
+        .modal-content { background: white; border-radius: 12px; padding: 24px; max-width: 440px; width: 92%; max-height: 90vh; overflow-y: auto; position: relative; animation: modalSlide 0.3s ease-out; }
+        @keyframes modalSlide { 0% { opacity: 0; transform: translateY(20px); } 100% { opacity: 1; transform: translateY(0); } }
+        .modal-close { position: absolute; top: 12px; right: 12px; cursor: pointer; background: none; border: none; font-size: 24px; color: rgba(26,26,26,0.5); width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border-radius: 50%; transition: background 0.2s; }
+        .modal-close:hover { background: #f3f4f6; }
+        .form-group { margin-bottom: 16px; }
+        .form-group label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 4px; }
+        .form-group input, .form-group textarea { width: 100%; padding: 10px 12px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 14px; font-family: 'Inter', sans-serif; transition: border-color 0.2s; }
+        .form-group input:focus, .form-group textarea:focus { outline: none; border-color: #0052cc; box-shadow: 0 0 0 3px rgba(0,82,204,0.1); }
+        .submit-btn { width: 100%; background: #0052cc; color: white; padding: 11px 20px; border-radius: 6px; font-weight: 600; font-size: 15px; cursor: pointer; border: none; transition: background 0.3s; }
+        .submit-btn:hover { background: #0041a3; }
+        .whatsapp-float { position: fixed; bottom: 20px; right: 20px; z-index: 99; background: #25D366; color: white; width: 56px; height: 56px; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 16px rgba(37,211,102,0.4); transition: all 0.3s; cursor: pointer; text-decoration: none; }
+        .whatsapp-float:hover { transform: scale(1.1); box-shadow: 0 6px 24px rgba(37,211,102,0.6); }
+        .whatsapp-float svg { width: 28px; height: 28px; }
+        .animate-on-scroll { opacity: 0; transform: translateY(24px); transition: opacity 0.6s ease-out, transform 0.6s ease-out; }
+        .animate-on-scroll.visible { opacity: 1; transform: translateY(0); }
+        .delay-100 { transition-delay: 0.1s; }
+        .delay-200 { transition-delay: 0.2s; }
+        .delay-300 { transition-delay: 0.3s; }
+        .mobile-nav-overlay { display: none; position: fixed; top: 113px; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.4); z-index: 49; }
+        .mobile-nav-overlay.open { display: block; }
+        .mobile-nav { display: none; position: fixed; top: 113px; left: 0; right: 0; background: white; z-index: 50; padding: 16px; border-bottom: 1px solid #e5e7eb; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+        .mobile-nav.open { display: block; }
+        .mobile-nav a { display: block; padding: 12px 8px; font-size: 15px; font-weight: 500; color: #1a1a1a; text-decoration: none; border-bottom: 1px solid #f3f4f6; }
+        .mobile-nav a:last-child { border-bottom: none; }
+        .mobile-menu-btn { display: flex; align-items: center; justify-content: center; background: none; border: none; cursor: pointer; padding: 4px; }
+        @media (min-width: 768px) { .mobile-menu-btn, .mobile-nav, .mobile-nav-overlay { display: none !important; } }
+        .blog-card { background: white; border: 1px solid #e5e7eb; border-radius: 12px; overflow: hidden; transition: all 0.3s; display: block; text-decoration: none; color: inherit; }
+        .blog-card:hover { box-shadow: 0 12px 24px rgba(0,0,0,0.1); transform: translateY(-4px); }
+        .blog-card img { width: 100%; height: 200px; object-fit: cover; }
+        .blog-card-body { padding: 20px; }
+        .blog-card h3 { font-size: 18px; margin-bottom: 8px; color: #1a1a1a; }
+        .blog-card p { font-size: 14px; color: rgba(26,26,26,0.7); line-height: 1.5; }
+        .blog-card .meta { font-size: 12px; color: rgba(26,26,26,0.5); margin-bottom: 8px; }
+        .prose { max-width: 768px; margin: 0 auto; line-height: 1.8; font-size: 16px; }
+        .prose h2 { font-size: 28px; margin: 40px 0 16px; }
+        .prose h3 { font-size: 22px; margin: 32px 0 12px; }
+        .prose p { margin-bottom: 16px; }
+        .prose ul, .prose ol { margin-bottom: 16px; padding-left: 24px; }
+        .prose li { margin-bottom: 8px; }
+        .prose img { max-width: 100%; border-radius: 8px; margin: 24px 0; }
+        .hero { margin-top: 64px; position: relative; padding: 128px 16px 80px; background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%); color: white; overflow: hidden; background-size: 200% 200%; animation: heroGradient 12s ease-in-out infinite alternate; }
+        @keyframes heroGradient { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
+        .hero-slideshow { position: absolute; inset: 0; z-index: 0; }
+        .hero-slide { position: absolute; inset: 0; background-size: cover; background-position: center; opacity: 0; animation: slideFade 30s ease-in-out infinite; }
+        .hero-slide:nth-child(1) { background-image: url('https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=1920&q=85&auto=format&fit=crop'); animation-delay: 0s; }
+        .hero-slide:nth-child(2) { background-image: url('https://images.unsplash.com/photo-1563013544-824ae1b704d3?w=1920&q=85&auto=format&fit=crop'); animation-delay: 6s; }
+        .hero-slide:nth-child(3) { background-image: url('https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=1920&q=85&auto=format&fit=crop'); animation-delay: 12s; }
+        .hero-slide:nth-child(4) { background-image: url('https://images.unsplash.com/photo-1518770660439-4636190af475?w=1920&q=85&auto=format&fit=crop'); animation-delay: 18s; }
+        .hero-slide:nth-child(5) { background-image: url('https://images.unsplash.com/photo-1573164713714-d95e436ab8d6?w=1920&q=85&auto=format&fit=crop'); animation-delay: 24s; }
+        @keyframes slideFade { 0% { opacity: 0; transform: scale(1.05); } 4% { opacity: 1; } 16% { opacity: 1; } 20% { opacity: 0; transform: scale(1); } 100% { opacity: 0; } }
+        .hero-grid { position: absolute; inset: 0; z-index: 0; pointer-events: none; background-image: linear-gradient(rgba(0, 82, 204, 0.08) 1px, transparent 1px), linear-gradient(90deg, rgba(0, 82, 204, 0.08) 1px, transparent 1px); background-size: 60px 60px; animation: gridMove 8s linear infinite; }
+        @keyframes gridMove { 0% { transform: translate(0, 0); } 100% { transform: translate(60px, 60px); } }
+        .hero-particles { position: absolute; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; }
+        .hero-particle { position: absolute; width: 4px; height: 4px; background: rgba(0, 184, 148, 0.6); border-radius: 50%; animation: particleFloat linear infinite; }
+        .hero-particle:nth-child(1) { left: 10%; top: 20%; width: 6px; height: 6px; animation-duration: 14s; animation-delay: 0s; }
+        .hero-particle:nth-child(2) { left: 25%; top: 60%; width: 3px; height: 3px; animation-duration: 18s; animation-delay: 2s; background: rgba(0, 82, 204, 0.5); }
+        .hero-particle:nth-child(3) { left: 45%; top: 10%; width: 5px; height: 5px; animation-duration: 16s; animation-delay: 4s; background: rgba(0, 184, 148, 0.4); }
+        .hero-particle:nth-child(4) { left: 65%; top: 70%; width: 4px; height: 4px; animation-duration: 20s; animation-delay: 1s; }
+        .hero-particle:nth-child(5) { left: 80%; top: 30%; width: 3px; height: 3px; animation-duration: 15s; animation-delay: 3s; background: rgba(0, 82, 204, 0.6); }
+        .hero-particle:nth-child(6) { left: 50%; top: 80%; width: 5px; height: 5px; animation-duration: 12s; animation-delay: 5s; background: rgba(0, 184, 148, 0.5); }
+        .hero-particle:nth-child(7) { left: 15%; top: 45%; width: 4px; height: 4px; animation-duration: 22s; animation-delay: 0s; }
+        .hero-particle:nth-child(8) { left: 90%; top: 55%; width: 3px; height: 3px; animation-duration: 17s; animation-delay: 2s; background: rgba(0, 82, 204, 0.5); }
+        .hero-particle:nth-child(9) { left: 35%; top: 35%; width: 6px; height: 6px; animation-duration: 19s; animation-delay: 4s; background: rgba(0, 184, 148, 0.3); }
+        .hero-particle:nth-child(10) { left: 72%; top: 15%; width: 4px; height: 4px; animation-duration: 13s; animation-delay: 1s; }
+        @keyframes particleFloat { 0% { transform: translateY(0) scale(1); opacity: 0; } 10% { opacity: 1; } 90% { opacity: 1; } 100% { transform: translateY(-100vh) scale(0); opacity: 0; } }
+        .hero-glow { position: absolute; inset: 0; z-index: 0; pointer-events: none; background: radial-gradient(ellipse at 20% 50%, rgba(0, 82, 204, 0.2) 0%, transparent 50%), radial-gradient(ellipse at 80% 50%, rgba(0, 184, 148, 0.12) 0%, transparent 50%); }
+        .hero::after { content: ''; position: absolute; inset: 0; background: linear-gradient(to right, rgba(15, 23, 42, 0.8), rgba(15, 23, 42, 0.4), transparent); z-index: 1; }
+        .hero-content { max-width: 1280px; margin: 0 auto; position: relative; z-index: 2; max-width: 640px; }
+        .hero-badge { display: inline-block; background: rgba(0, 82, 204, 0.2); border: 1px solid rgba(0, 82, 204, 0.4); padding: 8px 16px; border-radius: 24px; font-size: 14px; font-weight: 500; color: #0052cc; margin-bottom: 24px; }
+        .hero h1 { font-size: 48px; line-height: 1.2; margin-bottom: 24px; font-weight: 800; }
+        @media (max-width: 640px) { .hero h1 { font-size: 32px; } }
+        .hero-highlight { color: #00b894; }
+        .hero p { font-size: 18px; color: rgba(255, 255, 255, 0.8); margin-bottom: 32px; line-height: 1.6; max-width: 560px; }
+        .hero-buttons { display: flex; flex-direction: column; gap: 16px; margin-bottom: 64px; }
+        @media (min-width: 640px) { .hero-buttons { flex-direction: row; } }
+        .btn-primary { background: #0052cc; color: white; padding: 12px 24px; border-radius: 6px; font-weight: 600; text-decoration: none; font-size: 16px; cursor: pointer; border: none; transition: all 0.3s; display: inline-flex; align-items: center; gap: 8px; text-align: center; }
+        .btn-primary:hover { background: #0041a3; transform: translateY(-2px); }
+        .btn-secondary { background: transparent; color: white; padding: 12px 24px; border: 1px solid rgba(255, 255, 255, 0.3); border-radius: 6px; font-weight: 600; text-decoration: none; font-size: 16px; cursor: pointer; transition: all 0.3s; display: inline-block; text-align: center; }
+        .btn-secondary:hover { background: rgba(255, 255, 255, 0.1); }
+        .hero-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 32px; padding-top: 32px; border-top: 1px solid rgba(255, 255, 255, 0.2); }
+        .stat { text-align: left; }
+        .stat-number { font-size: 32px; font-weight: bold; color: white; margin-bottom: 8px; }
+        .stat-label { font-size: 14px; color: rgba(255, 255, 255, 0.6); }
+        .partners { padding: 48px 16px; background: white; }
+        .partners-container { max-width: 1280px; margin: 0 auto; }
+        .partners-title { text-align: center; color: rgba(26, 26, 26, 0.7); font-weight: 600; margin-bottom: 32px; font-size: 14px; }
+        .partners-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 24px; }
+        .partner-item { display: flex; align-items: center; justify-content: center; padding: 16px; border: 1px solid #e5e7eb; border-radius: 8px; transition: box-shadow 0.3s; }
+        .partner-item:hover { box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); }
+        .partner-item span { display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 500; color: #1a1a1a; }
+        .testimonials { padding: 80px 16px; background: linear-gradient(to bottom, white, rgba(242, 242, 242, 0.3)); }
+        .testimonials-container { max-width: 1280px; margin: 0 auto; }
+        .testimonials-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 32px; margin-top: 48px; }
+        .testimonial-card { background: white; border: 1px solid #e5e7eb; border-radius: 12px; padding: 32px; transition: box-shadow 0.3s; }
+        .testimonial-card:hover { box-shadow: 0 12px 24px rgba(0, 0, 0, 0.1); }
+        .stars { display: flex; gap: 4px; margin-bottom: 16px; font-size: 18px; }
+        .testimonial-text { font-size: 14px; color: rgba(26, 26, 26, 0.7); margin-bottom: 24px; line-height: 1.6; font-style: italic; }
+        .testimonial-author { border-top: 1px solid #e5e7eb; padding-top: 16px; }
+        .testimonial-name { font-weight: 600; color: #1a1a1a; font-size: 14px; }
+        .testimonial-role { font-size: 12px; color: rgba(26, 26, 26, 0.6); }
+        .testimonial-company { font-size: 12px; color: #0052cc; font-weight: 600; }
+        .contact-section { padding: 80px 16px; background: linear-gradient(to bottom, rgba(242,242,242,0.3), white); }
+        .contact-form { max-width: 600px; margin: 0 auto; }
+        .blog-hero { background: linear-gradient(135deg, #0f172a, #1e293b); color: white; padding: 112px 16px 64px; text-align: center; }
+        .blog-hero h1 { font-size: 42px; }
+        .blog-hero p { color: rgba(255,255,255,0.7); max-width: 560px; margin: 16px auto 0; }
+        .page-content { padding: 80px 16px; }
+        .page-content .container { max-width: 1280px; margin: 0 auto; }
+        .blog-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 32px; }
+        .servicio-hero { background: linear-gradient(135deg, #0f172a, #1e293b); color: white; padding: 112px 16px 64px; text-align: center; }
+        .servicio-hero h1 { font-size: 42px; margin-bottom: 16px; }
+        .servicio-hero p { color: rgba(255,255,255,0.7); max-width: 640px; margin: 0 auto; font-size: 18px; }
+    </style>
+</head>
+<body>
+    <div class="emergency-banner">
+        <div class="emergency-banner-text">
+            <span class="material-symbols-rounded" style="font-size: 20px;">warning</span>
+            <span>Emergencias TI 24/7: Soporte inmediato para contingencias críticas</span>
+        </div>
+        <a href="https://wa.me/56943996681?text=Emergencia%20TI%20-%20Necesito%20soporte%20inmediato" class="emergency-btn">
+            <span class="material-symbols-rounded" style="font-size: 18px;">call</span> Solicitar Soporte
+        </a>
+    </div>
+
+    <header>
+        <div class="header-container">
+            <a href="/" class="logo">
+                <div class="logo-icon">C</div>
+                <span class="logo-text">CACD</span>
+            </a>
+            <nav>
+                <a href="/">Inicio</a>
+                <a href="/#servicios">Servicios</a>
+                <a href="/#planes">Planes</a>
+                <a href="/#nosotros">Nosotros</a>
+                <a href="/#casos">Casos de Éxito</a>
+                <a href="{% url 'sitio_blog' %}">Blog</a>
+                <a href="/#faq">FAQ</a>
+                <a href="{% url 'portal_dashboard' %}" target="_blank" style="color:#0052cc;font-weight:600;">Portal Clientes</a>
+            </nav>
+            <div class="header-actions">
+                <a href="https://wa.me/56943996681" class="support-link">
+                    <span class="material-symbols-rounded" style="font-size: 18px;">call</span>
+                    <span>Soporte 24/7</span>
+                </a>
+                <button class="cta-btn open-modal-btn">Agendar Asesoría</button>
+                <button class="mobile-menu-btn" id="mobile-toggle">
+                    <span class="material-symbols-rounded" style="font-size: 28px;">menu</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <div class="mobile-nav-overlay" id="mobile-overlay"></div>
+    <div class="mobile-nav" id="mobile-nav">
+        <a href="/">Inicio</a>
+        <a href="/#servicios">Servicios</a>
+        <a href="/#planes">Planes</a>
+        <a href="/#nosotros">Nosotros</a>
+        <a href="/#casos">Casos de Éxito</a>
+        <a href="{% url 'sitio_blog' %}">Blog</a>
+        <a href="/#faq">FAQ</a>
+        <a href="{% url 'portal_dashboard' %}" target="_blank" style="color:#0052cc;font-weight:600;">Portal Clientes</a>
+        <a href="javascript:void(0)" class="open-modal-btn" style="color:#0052cc;font-weight:600;">Agendar Asesoría</a>
+    </div>
+
+    {% block content %}{% endblock %}
+
+    <div class="modal-overlay" id="modal-overlay">
+        <div class="modal-content">
+            <button class="modal-close" id="modal-close">&times;</button>
+            <h2 style="font-size: 20px; margin-bottom: 4px;">Agendar Asesoría Gratuita</h2>
+            <p style="font-size: 13px; color: rgba(26,26,26,0.6); margin-bottom: 20px;">Déjanos tus datos y te contactaremos en 24 horas.</p>
+            <form id="contact-form">
+                <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
+                <div class="form-group">
+                    <label>Nombre Completo <span style="color:#dc2626;">*</span></label>
+                    <input type="text" name="nombre" required>
+                </div>
+                <div class="form-group">
+                    <label>Correo Electrónico <span style="color:#dc2626;">*</span></label>
+                    <input type="email" name="email" required>
+                </div>
+                <div class="form-group">
+                    <label>Teléfono</label>
+                    <input type="tel" name="telefono">
+                </div>
+                <div class="form-group">
+                    <label>Mensaje</label>
+                    <textarea name="mensaje" rows="3">Hola, me gustaría agendar una asesoría.</textarea>
+                </div>
+                <button type="submit" class="submit-btn">Enviar Solicitud</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="toast" class="toast"></div>
+
+    <a href="https://wa.me/56943996681" class="whatsapp-float" target="_blank">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+    </a>
+
+    <footer>
+        <div class="footer-container">
+            <div class="footer-grid">
+                <div class="footer-section">
+                    <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px;">
+                        <div style="width:32px;height:32px;background:#0052cc;border-radius:8px;display:flex;align-items:center;justify-content:center;color:white;font-weight:bold;font-size:18px;">C</div>
+                        <span style="font-weight:bold;font-size:18px;">CACD</span>
+                    </div>
+                    <p style="color:rgba(255,255,255,0.6);font-size:14px;line-height:1.6;">Soluciones tecnológicas integrales para la transformación digital de tu negocio.</p>
+                </div>
+                <div class="footer-section">
+                    <h4>Servicios</h4>
+                    <ul>
+                        <li><a href="/#servicios">Ciberseguridad</a></li>
+                        <li><a href="/#servicios">Cloud AWS</a></li>
+                        <li><a href="/#servicios">Infraestructura TI</a></li>
+                        <li><a href="/#servicios">Consultoría</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Empresa</h4>
+                    <ul>
+                        <li><a href="/#nosotros">Nosotros</a></li>
+                        <li><a href="/#casos">Casos de Éxito</a></li>
+                        <li><a href="/#faq">FAQ</a></li>
+                        <li><a href="{% url 'sitio_blog' %}">Blog</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Contacto</h4>
+                    <ul>
+                        <li><a href="https://wa.me/56943996681">+56 9 4399 6681</a></li>
+                        <li><a href="mailto:contacto@cacdsoluciones.com">contacto@cacdsoluciones.com</a></li>
+                        <li style="color:rgba(255,255,255,0.6);font-size:14px;">Santiago, Chile</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; {% now "Y" %} CACD Soluciones. Todos los derechos reservados.</p>
+                <p>
+                    <a href="{% url 'portal_dashboard' %}" style="color:rgba(255,255,255,0.6);text-decoration:none;font-size:14px;">Portal Clientes</a>
+                    <span style="margin:0 8px;color:rgba(255,255,255,0.3);">|</span>
+                    <a href="{% url 'admin:index' %}" style="color:rgba(255,255,255,0.6);text-decoration:none;font-size:14px;">Técnicos</a>
+                </p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Mobile nav
+        document.getElementById('mobile-toggle')?.addEventListener('click', function() {
+            document.getElementById('mobile-nav').classList.toggle('open');
+            document.getElementById('mobile-overlay').classList.toggle('open');
+        });
+        document.getElementById('mobile-overlay')?.addEventListener('click', function() {
+            document.getElementById('mobile-nav').classList.remove('open');
+            this.classList.remove('open');
+        });
+
+        // Modal
+        const overlay = document.getElementById('modal-overlay');
+        document.querySelectorAll('.open-modal-btn').forEach(btn => {
+            btn.addEventListener('click', () => overlay.classList.add('open'));
+        });
+        document.getElementById('modal-close')?.addEventListener('click', () => {
+            overlay.classList.remove('open');
+        });
+        overlay?.addEventListener('click', (e) => {
+            if (e.target === overlay) overlay.classList.remove('open');
+        });
+
+        // Contact form
+        document.getElementById('contact-form')?.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const form = this;
+            const btn = form.querySelector('.submit-btn');
+            btn.textContent = 'Enviando...';
+            btn.disabled = true;
+
+            const formData = new FormData(form);
+            try {
+                const resp = await fetch('{% url "sitio_enviar_contacto" %}', {
+                    method: 'POST',
+                    body: new URLSearchParams(formData),
+                    headers: {'X-Requested-With': 'XMLHttpRequest'}
+                });
+                const data = await resp.json();
+                if (data.ok) {
+                    showToast('Solicitud enviada. Te contactaremos en 24 horas.');
+                    form.reset();
+                    overlay.classList.remove('open');
+                } else {
+                    showToast('Error al enviar. Intenta de nuevo.', true);
+                }
+            } catch {
+                showToast('Error de conexión. Intenta de nuevo.', true);
+            }
+            btn.textContent = 'Enviar Solicitud';
+            btn.disabled = false;
+        });
+
+        function showToast(msg, error) {
+            const t = document.getElementById('toast');
+            t.textContent = msg;
+            t.className = 'toast' + (error ? ' error' : '');
+            t.classList.add('show');
+            setTimeout(() => t.classList.remove('show'), 4000);
+        }
+
+        // FAQ accordion
+        document.querySelectorAll('.faq-question').forEach(q => {
+            q.addEventListener('click', () => {
+                const answer = q.nextElementSibling;
+                const icon = q.querySelector('.faq-icon');
+                const wasActive = answer.classList.contains('active');
+                document.querySelectorAll('.faq-answer').forEach(a => a.classList.remove('active'));
+                document.querySelectorAll('.faq-icon').forEach(i => i.textContent = 'expand_more');
+                if (!wasActive) {
+                    answer.classList.add('active');
+                    if (icon) icon.textContent = 'expand_less';
+                }
+            });
+        });
+
+        // Scroll animations
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                    observer.unobserve(entry.target);
+                }
+            });
+        }, { threshold: 0.1 });
+
+        document.querySelectorAll('.animate-on-scroll').forEach(el => observer.observe(el));
+    </script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

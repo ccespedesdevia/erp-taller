@@ -1,0 +1,313 @@
+{% extends 'sitio/base.html' %}
+{% load static %}
+{% block content %}
+
+<!-- Hero -->
+<section class="hero" id="inicio">
+    <div class="hero-slideshow">
+        <div class="hero-slide"></div>
+        <div class="hero-slide"></div>
+        <div class="hero-slide"></div>
+        <div class="hero-slide"></div>
+        <div class="hero-slide"></div>
+    </div>
+    <div class="hero-grid"></div>
+    <div class="hero-particles">
+        <div class="hero-particle"></div>
+        <div class="hero-particle"></div>
+        <div class="hero-particle"></div>
+        <div class="hero-particle"></div>
+        <div class="hero-particle"></div>
+        <div class="hero-particle"></div>
+        <div class="hero-particle"></div>
+        <div class="hero-particle"></div>
+        <div class="hero-particle"></div>
+        <div class="hero-particle"></div>
+    </div>
+    <div class="hero-glow"></div>
+    <div class="hero-content">
+        <div class="hero-badge">✓ 25 años de confianza</div>
+        <h1>Infraestructura que <span class="hero-highlight">conecta futuros</span></h1>
+        <p>Soluciones tecnológicas integrales que impulsan la evolución de tu negocio. Seguridad, escalabilidad y operación inteligente en cada paso.</p>
+        <div class="hero-buttons">
+            <button class="btn-primary open-modal-btn">
+                Agendar Asesoría Gratuita
+                <span class="material-symbols-rounded" style="font-size: 18px;">arrow_forward</span>
+            </button>
+            <a class="btn-secondary" href="#servicios">Explorar Servicios</a>
+        </div>
+        <div class="hero-stats">
+            <div class="stat"><div class="stat-number">25+</div><div class="stat-label">Años de experiencia</div></div>
+            <div class="stat"><div class="stat-number">500+</div><div class="stat-label">Empresas confiadas</div></div>
+            <div class="stat"><div class="stat-number">24/7</div><div class="stat-label">Soporte disponible</div></div>
+        </div>
+    </div>
+</section>
+
+<!-- Partners -->
+<section class="partners">
+    <div class="partners-container">
+        <div class="partners-title">Nuestros Partners Tecnológicos</div>
+        <div class="partners-grid">
+            <div class="partner-item"><span><span class="material-symbols-rounded">verified</span> AWS</span></div>
+            <div class="partner-item"><span><span class="material-symbols-rounded">verified</span> Microsoft Azure</span></div>
+            <div class="partner-item"><span><span class="material-symbols-rounded">verified</span> VMware</span></div>
+            <div class="partner-item"><span><span class="material-symbols-rounded">verified</span> Cisco</span></div>
+            <div class="partner-item"><span><span class="material-symbols-rounded">verified</span> Fortinet</span></div>
+            <div class="partner-item"><span><span class="material-symbols-rounded">verified</span> Red Hat</span></div>
+        </div>
+    </div>
+</section>
+
+<!-- Services -->
+<section class="services" id="servicios">
+    <div class="services-container">
+        <div class="section-header animate-on-scroll">
+            <h2>Soluciones Integrales IT</h2>
+            <p>Arquitectura tecnológica de nivel empresarial para asegurar el rendimiento y la protección de tus activos digitales.</p>
+        </div>
+        <div class="services-grid">
+            {% for s in servicios %}
+            <a href="{% url 'sitio_servicio' s.slug %}" class="service-card animate-on-scroll{% if forloop.counter0 == 1 %} delay-100{% elif forloop.counter0 == 2 %} delay-200{% elif forloop.counter0 == 3 %} delay-300{% elif forloop.counter0 == 4 %} delay-100{% elif forloop.counter0 == 5 %} delay-200{% endif %}">
+                <div class="service-image">
+                    {% if s.imagen %}<img src="{{ s.imagen }}" alt="{{ s.nombre }}">{% endif %}
+                    <div class="service-icon" style="background: {{ s.color_gradiente|default:'linear-gradient(135deg, #0066ff, #00ccff)' }};">
+                        <span class="material-symbols-rounded">{{ s.icono }}</span>
+                    </div>
+                </div>
+                <div class="service-content">
+                    <h3>{{ s.nombre }}</h3>
+                    <p>{{ s.descripcion_corta }}</p>
+                    <span class="service-link">Saber más →</span>
+                </div>
+            </a>
+            {% empty %}
+            <p style="grid-column:1/-1;text-align:center;color:rgba(26,26,26,0.5);">Cargando servicios...</p>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<!-- Pricing -->
+<section class="pricing" id="planes">
+    <div class="pricing-container">
+        <div class="section-header animate-on-scroll">
+            <h2>Planes Flexibles</h2>
+            <p>Desde startups hasta corporaciones, tenemos un plan adaptado a tu realidad.</p>
+        </div>
+        <div class="pricing-grid">
+            <div class="pricing-card animate-on-scroll">
+                <h3 class="pricing-name">Protección Esencial</h3>
+                <p class="pricing-description">ideal para PYMEs</p>
+                <div class="pricing-amount">$150.000</div>
+                <p class="pricing-period">CLP / mes</p>
+                <ul class="pricing-features">
+                    <li>Firewall gestionado 24/7</li>
+                    <li>Antivirus corporativo EDR</li>
+                    <li>Backup encriptado semanal</li>
+                    <li>Soporte en horario laboral</li>
+                </ul>
+                <button class="pricing-btn open-modal-btn">Contratar</button>
+            </div>
+            <div class="pricing-card featured animate-on-scroll delay-100">
+                <div class="pricing-badge">Más Popular</div>
+                <h3 class="pricing-name">Continuidad Avanzada</h3>
+                <p class="pricing-description">ideal para empresas</p>
+                <div class="pricing-amount">$380.000</div>
+                <p class="pricing-period">CLP / mes</p>
+                <ul class="pricing-features">
+                    <li>Todo el plan esencial</li>
+                    <li>Infraestructura cloud híbrida</li>
+                    <li>DRP con RPO &lt; 15 min</li>
+                    <li>Soporte 24/7 con SLA 1 hora</li>
+                    <li>Licenciamiento incluido</li>
+                </ul>
+                <button class="pricing-btn open-modal-btn">Contratar</button>
+            </div>
+            <div class="pricing-card animate-on-scroll delay-200">
+                <h3 class="pricing-name">Transformación Total</h3>
+                <p class="pricing-description">ideal para corporaciones</p>
+                <div class="pricing-amount">$750.000</div>
+                <p class="pricing-period">CLP / mes</p>
+                <ul class="pricing-features">
+                    <li>Todo el plan avanzado</li>
+                    <li>Arquitectura cloud nativa</li>
+                    <li>Consultoría estratégica ilimitada</li>
+                    <li>Security Operations Center (SOC)</li>
+                    <li>Dedicated Account Manager</li>
+                </ul>
+                <button class="pricing-btn open-modal-btn">Contratar</button>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- About -->
+<section class="services" id="nosotros" style="background:white;">
+    <div class="services-container">
+        <div class="section-header animate-on-scroll">
+            <h2>25 Años Liderando la Transformación Digital en Chile</h2>
+            <p>Desde 1999, CACD Soluciones ha sido el aliado estratégico de empresas líderes en su camino hacia la excelencia tecnológica.</p>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr;gap:40px;align-items:center;max-width:900px;margin:0 auto;">
+            <div>
+                <p style="font-size:15px;color:rgba(26,26,26,0.7);line-height:1.7;margin-bottom:24px;">
+                    Fundada en 1999, CACD Soluciones es una empresa chilena especializada en infraestructura TI, ciberseguridad y cloud computing. Con un equipo de ingenieros certificados en AWS, VMware, Fortinet y Microsoft, hemos ejecutado más de 500 proyectos exitosos.
+                </p>
+                <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:24px;text-align:center;">
+                    <div><div style="font-size:36px;font-weight:800;color:#0052cc;">500+</div><div style="font-size:13px;color:rgba(26,26,26,0.6);">Proyectos exitosos</div></div>
+                    <div><div style="font-size:36px;font-weight:800;color:#0052cc;">99.9%</div><div style="font-size:13px;color:rgba(26,26,26,0.6);">Disponibilidad</div></div>
+                    <div><div style="font-size:36px;font-weight:800;color:#0052cc;">24/7</div><div style="font-size:13px;color:rgba(26,26,26,0.6);">Soporte continuo</div></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Testimonials -->
+<section class="testimonials" id="casos">
+    <div class="testimonials-container">
+        <div class="section-header animate-on-scroll">
+            <h2>Casos de Éxito</h2>
+            <p>Empresas liderando su transformación digital con CACD Soluciones</p>
+        </div>
+        <div class="testimonials-grid">
+            <div class="testimonial-card animate-on-scroll">
+                <div class="stars">★★★★★</div>
+                <p class="testimonial-text">"CACD Soluciones transformó completamente nuestra infraestructura. Pasamos de tener downtime frecuente a 99.9% de disponibilidad."</p>
+                <div class="testimonial-author">
+                    <div class="testimonial-name">Juan Rodríguez</div>
+                    <div class="testimonial-role">Director de TI</div>
+                    <div class="testimonial-company">TechCorp Chile</div>
+                </div>
+            </div>
+            <div class="testimonial-card animate-on-scroll delay-100">
+                <div class="stars">★★★★★</div>
+                <p class="testimonial-text">"El equipo de CACD es excepcional. Su soporte 24/7 y consultoría estratégica nos ayudó a ahorrar 40% en costos de infraestructura."</p>
+                <div class="testimonial-author">
+                    <div class="testimonial-name">María González</div>
+                    <div class="testimonial-role">Gerente de Operaciones</div>
+                    <div class="testimonial-company">FinanceGroup</div>
+                </div>
+            </div>
+            <div class="testimonial-card animate-on-scroll delay-200">
+                <div class="stars">★★★★★</div>
+                <p class="testimonial-text">"La migración a cloud que CACD realizó fue impecable. Cero interrupciones y resultados inmediatos en performance."</p>
+                <div class="testimonial-author">
+                    <div class="testimonial-name">Carlos Méndez</div>
+                    <div class="testimonial-role">CTO</div>
+                    <div class="testimonial-company">RetailSolutions</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- CTA -->
+<section class="cta-section" id="contacto">
+    <h2>¿Listo para llevar tu infraestructura al siguiente nivel?</h2>
+    <p>Agende una videollamada de 15 minutos con un arquitecto TI. Sin compromiso.</p>
+    <button class="btn-primary open-modal-btn" style="background: white; color: #0052cc;">
+        Agendar Ahora
+        <span class="material-symbols-rounded" style="font-size: 18px;">arrow_forward</span>
+    </button>
+</section>
+
+<!-- FAQ -->
+<section class="faq" id="faq">
+    <div class="faq-container">
+        <div class="section-header animate-on-scroll">
+            <h2>Preguntas Frecuentes</h2>
+            <p>Resolvemos tus dudas sobre nuestros servicios y procesos.</p>
+        </div>
+        <div class="faq-item">
+            <div class="faq-question">
+                ¿Cuál es el tiempo de respuesta para emergencias TI?
+                <span class="material-symbols-rounded faq-icon" style="font-size: 20px;">expand_more</span>
+            </div>
+            <div class="faq-answer">Nuestro servicio 24/7 garantiza un tiempo de respuesta inicial (SLA) inferior a 15 minutos para incidentes críticos que afecten la continuidad operativa.</div>
+        </div>
+        <div class="faq-item">
+            <div class="faq-question">
+                ¿Ofrecen soporte para migraciones a la nube?
+                <span class="material-symbols-rounded faq-icon" style="font-size: 20px;">expand_more</span>
+            </div>
+            <div class="faq-answer">Sí, somos especialistas en migraciones hacia entornos Cloud, particularmente AWS y Azure, asegurando una transición fluida con cero pérdida de datos.</div>
+        </div>
+        <div class="faq-item">
+            <div class="faq-question">
+                ¿Tienen servicio de soporte 24/7?
+                <span class="material-symbols-rounded faq-icon" style="font-size: 20px;">expand_more</span>
+            </div>
+            <div class="faq-answer">Sí, ofrecemos soporte 24/7 los 365 días del año para incidentes críticos. Puede contactarnos a través de nuestro WhatsApp de emergencias desde el banner superior.</div>
+        </div>
+        <div class="faq-item">
+            <div class="faq-question">
+                ¿Cómo funciona el proceso de onboarding?
+                <span class="material-symbols-rounded faq-icon" style="font-size: 20px;">expand_more</span>
+            </div>
+            <div class="faq-answer">Comenzamos con un diagnóstico gratuito de su infraestructura actual. Luego diseñamos una hoja de ruta personalizada y la implementamos en fases, con mínima interrupción de sus operaciones.</div>
+        </div>
+    </div>
+</section>
+
+<!-- Contact Form -->
+<section class="services contact-section" id="contacto-form">
+    <div class="services-container">
+        <div class="section-header animate-on-scroll">
+            <h2>Hablemos de tu infraestructura</h2>
+            <p>Cuéntanos sobre tu proyecto y te contactaremos en menos de 24 horas.</p>
+        </div>
+        <div class="contact-form animate-on-scroll">
+            <form id="contact-form-bottom" onsubmit="return false;">
+                <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
+                <div class="form-group">
+                    <label>Nombre Completo <span style="color:#dc2626;">*</span></label>
+                    <input type="text" name="nombre" required>
+                </div>
+                <div class="form-group">
+                    <label>Correo Electrónico <span style="color:#dc2626;">*</span></label>
+                    <input type="email" name="email" required>
+                </div>
+                <div class="form-group">
+                    <label>Teléfono</label>
+                    <input type="tel" name="telefono">
+                </div>
+                <div class="form-group">
+                    <label>Mensaje</label>
+                    <textarea name="mensaje" rows="4"></textarea>
+                </div>
+                <button type="submit" class="submit-btn" onclick="submitContactForm(this)">Enviar Solicitud</button>
+            </form>
+        </div>
+    </div>
+</section>
+
+<script>
+async function submitContactForm(btn) {
+    const form = btn.closest('form');
+    btn.textContent = 'Enviando...';
+    btn.disabled = true;
+    const formData = new FormData(form);
+    try {
+        const resp = await fetch('{% url "sitio_enviar_contacto" %}', {
+            method: 'POST',
+            body: new URLSearchParams(formData),
+            headers: {'X-Requested-With': 'XMLHttpRequest'}
+        });
+        const data = await resp.json();
+        if (data.ok) {
+            showToast('Solicitud enviada. Te contactaremos en 24 horas.');
+            form.reset();
+        } else {
+            showToast('Error al enviar. Intenta de nuevo.', true);
+        }
+    } catch {
+        showToast('Error de conexión. Intenta de nuevo.', true);
+    }
+    btn.textContent = 'Enviar Solicitud';
+    btn.disabled = false;
+}
+</script>
+
+{% endblock %}

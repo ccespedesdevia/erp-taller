@@ -1,0 +1,28 @@
+{% extends 'sitio/base.html' %}
+{% block content %}
+<div class="servicio-hero">
+    <h1>Nuestros Servicios</h1>
+    <p>Soluciones tecnológicas integrales para impulsar la transformación digital de tu empresa.</p>
+</div>
+<section class="services">
+    <div class="services-container">
+        <div class="services-grid">
+            {% for s in servicios %}
+            <a href="{% url 'sitio_servicio' s.slug %}" class="service-card animate-on-scroll">
+                <div class="service-image">
+                    {% if s.imagen %}<img src="{{ s.imagen }}" alt="{{ s.nombre }}">{% endif %}
+                    <div class="service-icon" style="background: {{ s.color_gradiente }};">
+                        <span class="material-symbols-rounded">{{ s.icono }}</span>
+                    </div>
+                </div>
+                <div class="service-content">
+                    <h3>{{ s.nombre }}</h3>
+                    <p>{{ s.descripcion_corta }}</p>
+                    <span class="service-link">Saber más →</span>
+                </div>
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endblock %}

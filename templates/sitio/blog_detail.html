@@ -1,0 +1,26 @@
+{% extends 'sitio/base.html' %}
+{% block title %}{{ articulo.meta_title }}{% endblock %}
+{% block description %}{{ articulo.meta_description }}{% endblock %}
+{% block content %}
+<div class="blog-hero">
+    <p style="color:rgba(255,255,255,0.5);font-size:14px;margin-bottom:8px;">{{ articulo.fecha_publicacion|date:"d/m/Y" }} · {{ articulo.autor }}</p>
+    <h1>{{ articulo.titulo }}</h1>
+    <p>{{ articulo.resumen }}</p>
+</div>
+<section class="page-content">
+    <div class="prose">
+        {% if articulo.imagen %}
+        <img src="{{ articulo.imagen }}" alt="{{ articulo.titulo }}" style="width:100%;max-width:768px;display:block;margin:0 auto 40px;">
+        {% endif %}
+        {{ articulo.contenido|safe }}
+    </div>
+</section>
+<section class="cta-section">
+    <h2>¿Te interesa este tema?</h2>
+    <p>Agenda una asesoría gratuita con nuestros expertos.</p>
+    <button class="btn-primary open-modal-btn" style="background: white; color: #0052cc;">
+        Agendar Ahora
+        <span class="material-symbols-rounded" style="font-size: 18px;">arrow_forward</span>
+    </button>
+</section>
+{% endblock %}

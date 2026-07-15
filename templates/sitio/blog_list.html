@@ -1,0 +1,35 @@
+{% extends 'sitio/base.html' %}
+{% block content %}
+<div class="blog-hero">
+    <h1>Blog</h1>
+    <p>Artículos sobre infraestructura TI, ciberseguridad, cloud computing y transformación digital.</p>
+</div>
+<section class="page-content">
+    <div class="container">
+        {% if articulos %}
+        <div class="blog-grid">
+            {% for a in articulos %}
+            <a href="{% url 'sitio_blog_article' a.slug %}" class="blog-card animate-on-scroll">
+                {% if a.imagen %}<img src="{{ a.imagen }}" alt="{{ a.titulo }}">{% endif %}
+                <div class="blog-card-body">
+                    <div class="meta">{{ a.fecha_publicacion|date:"d/m/Y" }} · {{ a.autor }}</div>
+                    <h3>{{ a.titulo }}</h3>
+                    <p>{{ a.resumen }}</p>
+                </div>
+            </a>
+            {% endfor %}
+        </div>
+        {% else %}
+        <p style="text-align:center;color:rgba(26,26,26,0.5);padding:80px 0;">Próximamente publicaremos artículos. Vuelve pronto.</p>
+        {% endif %}
+    </div>
+</section>
+<section class="cta-section">
+    <h2>¿Necesitas ayuda con tu infraestructura TI?</h2>
+    <p>Agenda una asesoría gratuita con nuestros expertos.</p>
+    <button class="btn-primary open-modal-btn" style="background: white; color: #0052cc;">
+        Agendar Ahora
+        <span class="material-symbols-rounded" style="font-size: 18px;">arrow_forward</span>
+    </button>
+</section>
+{% endblock %}
