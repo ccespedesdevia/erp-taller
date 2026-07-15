@@ -4,97 +4,206 @@
     <meta charset="UTF-8">
     <title>Cotización N° {{ cotizacion.numero|stringformat:"05d" }}</title>
     <style>
-        @page { size: letter; margin: 1.5cm; }
-        body { font-family: 'Helvetica', 'Arial', sans-serif; font-size: 10pt; color: #1e293b; line-height: 1.4; }
-        table { width: 100%; border-collapse: collapse; }
-        td, th { padding: 4px 6px; }
-        .border { border: 1px solid #000; }
-        .border td, .border th { border: 1px solid #000; }
-        .b { font-weight: bold; }
+        @page { size: letter; margin: 1.2cm 1.5cm; }
+        body {
+            font-family: 'Helvetica', 'Arial', sans-serif;
+            font-size: 9.5pt;
+            color: #2d3748;
+            line-height: 1.5;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* === HEADER === */
+        .doc-header {
+            background: linear-gradient(135deg, #1a365d 0%, #2c5282 100%);
+            color: #fff;
+            padding: 22px 28px;
+            margin: -1.2cm -1.5cm 18px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .doc-header .company { line-height: 1.3; }
+        .doc-header .company-name { font-size: 18pt; font-weight: 800; letter-spacing: 0.5px; }
+        .doc-header .company-name span { color: #f6ad55; }
+        .doc-header .company-detail { font-size: 7.5pt; opacity: 0.85; margin-top: 2px; }
+        .doc-header .doc-title { text-align: right; }
+        .doc-header .doc-title h1 { font-size: 11pt; font-weight: 700; margin: 0; text-transform: uppercase; letter-spacing: 2px; opacity: 0.9; }
+        .doc-header .doc-title .num { font-size: 20pt; font-weight: 800; letter-spacing: 1px; margin-top: 2px; }
+        .doc-header .doc-title .date { font-size: 8pt; opacity: 0.8; margin-top: 4px; }
+
+        /* === SECTION HEADERS === */
+        .section-title {
+            font-size: 7pt;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: #2c5282;
+            margin-bottom: 6px;
+            padding-bottom: 3px;
+            border-bottom: 2px solid #2c5282;
+        }
+        .section-title.gray {
+            color: #718096;
+            border-bottom-color: #cbd5e0;
+        }
+
+        /* === INFO CARDS === */
+        .info-grid { display: flex; gap: 18px; margin-bottom: 16px; }
+        .info-card {
+            flex: 1;
+            background: #f7fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 5px;
+            padding: 10px 14px;
+        }
+        .info-card .label { font-size: 6.5pt; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: #718096; margin-bottom: 2px; }
+        .info-card .value { font-size: 9.5pt; font-weight: 600; color: #1a202c; }
+        .info-card .value-sm { font-size: 8.5pt; color: #4a5568; }
+
+        /* === CLIENT TABLE === */
+        .client-table { width: 100%; border-collapse: collapse; margin-bottom: 16px; border: 1px solid #e2e8f0; border-radius: 5px; overflow: hidden; }
+        .client-table td { padding: 5px 10px; border-bottom: 1px solid #f0f0f0; }
+        .client-table .lbl { font-size: 6.5pt; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: #718096; width: 18%; }
+        .client-table .val { font-size: 9pt; font-weight: 600; color: #1a202c; width: 32%; }
+
+        /* === ITEMS TABLE === */
+        .items-table { width: 100%; border-collapse: collapse; margin-bottom: 12px; border: 1px solid #e2e8f0; border-radius: 5px; overflow: hidden; }
+        .items-table thead th {
+            background: #2c5282; color: #fff; font-size: 7pt; font-weight: 700;
+            text-transform: uppercase; letter-spacing: 0.8px; padding: 7px 6px;
+            border-right: 1px solid rgba(255,255,255,0.1);
+        }
+        .items-table thead th:last-child { border-right: none; }
+        .items-table tbody td { padding: 5px 6px; border-bottom: 1px solid #edf2f7; font-size: 8.5pt; }
+        .items-table tbody tr:nth-child(even) { background: #f7fafc; }
+        .items-table tbody tr:hover { background: #ebf4ff; }
+        .items-table tbody tr:last-child td { border-bottom: none; }
+
+        /* === TOTALS === */
+        .totals-wrap { display: flex; justify-content: flex-end; margin-bottom: 16px; }
+        .totals-table { width: 48%; border-collapse: collapse; }
+        .totals-table td { padding: 4px 10px; font-size: 9pt; }
+        .totals-table .lbl { font-weight: 600; color: #4a5568; }
+        .totals-table .val { text-align: right; font-weight: 600; }
+        .totals-table .sep td { border-top: 1px solid #e2e8f0; }
+        .totals-table .total td { border-top: 2px solid #2c5282; font-size: 12pt; font-weight: 800; color: #1a365d; }
+        .totals-table .total .val { font-size: 13pt; }
+
+        /* === OBSERVACIONES === */
+        .obs-box {
+            background: #f7fafc;
+            border-left: 4px solid #2c5282;
+            border-radius: 3px;
+            padding: 8px 14px;
+            margin-bottom: 10px;
+            font-size: 8pt;
+        }
+        .obs-box .title { font-size: 6.5pt; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: #2c5282; margin-bottom: 3px; }
+
+        /* === LEGAL TERMS === */
+        .legal {
+            font-size: 7pt;
+            line-height: 1.45;
+            color: #4a5568;
+            margin-top: 14px;
+            padding: 10px 14px;
+            border: 1px solid #e2e8f0;
+            border-radius: 4px;
+            background: #fafafa;
+        }
+        .legal .title { font-size: 7.5pt; font-weight: 700; color: #2d3748; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 1px; }
+        .legal p { margin: 1px 0; }
+
+        /* === FOOTER === */
+        .footer {
+            margin-top: 16px;
+            padding-top: 8px;
+            border-top: 1px solid #e2e8f0;
+            font-size: 6.5pt;
+            color: #a0aec0;
+            text-align: center;
+        }
+
         .tc { text-align: center; }
         .tr { text-align: right; }
-        .bg-gray { background-color: #e5e7eb; }
-        .bg-dark { background-color: #1e293b; color: #fff; }
-        .fs-small { font-size: 8pt; }
-        .fs-large { font-size: 14pt; }
-        .mt-10 { margin-top: 10px; }
-        .mb-10 { margin-bottom: 10px; }
-        .p-4 { padding: 4px; }
-        .p-8 { padding: 8px; }
-        .w-50 { width: 50%; }
-        .no-wrap { white-space: nowrap; }
-        .terminos { font-size: 7.5pt; line-height: 1.3; margin-top: 15px; padding: 8px; border-top: 1px solid #ccc; }
-        .terminos p { margin: 2px 0; }
+        .b { font-weight: 700; }
+
         @media print { .no-print { display: none; } }
     </style>
 </head>
 <body>
 
-<table class="mb-10 border">
+<!-- ===== HEADER ===== -->
+<div class="doc-header">
+    <div class="company">
+        <div class="company-name">CACD <span>Soluciones</span></div>
+        <div class="company-detail">
+            {{ config.rut }} &nbsp;|&nbsp; {{ config.direccion }}<br>
+            {% if config.giro %}{{ config.giro }} &nbsp;|&nbsp; {% endif %}
+            Tel: {{ config.telefono }} &nbsp;|&nbsp; {{ config.email }}
+            {% if config.email_recepcion_dte %} &nbsp;|&nbsp; DTE: {{ config.email_recepcion_dte }}{% endif %}
+        </div>
+    </div>
+    <div class="doc-title">
+        <h1>Cotización</h1>
+        <div class="num">N° {{ cotizacion.numero|stringformat:"05d" }}</div>
+        <div class="date">{{ cotizacion.fecha|date:"d/m/Y" }}{% if cotizacion.valida_hasta %} &nbsp;|&nbsp; Válida hasta: {{ cotizacion.valida_hasta|date:"d/m/Y" }}{% endif %}</div>
+    </div>
+</div>
+
+<!-- ===== CLIENTE ===== -->
+<div class="section-title">Cliente</div>
+<table class="client-table">
     <tr>
-        <td class="w-50 p-8" style="border-right:1px solid #000;">
-            <div class="b fs-large">CACD Soluciones</div>
-            <div class="fs-small">{{ config.rut }}</div>
-            <div class="fs-small">{{ config.direccion }}</div>
-            {% if config.giro %}<div class="fs-small">{{ config.giro }}</div>{% endif %}
-            <div class="fs-small">Fono: {{ config.telefono }}</div>
-            <div class="fs-small">Email: {{ config.email }}</div>
-            {% if config.email_recepcion_dte %}<div class="fs-small">DTE: {{ config.email_recepcion_dte }}</div>{% endif %}
-        </td>
-        <td class="w-50 p-8 tc">
-            <div class="b fs-large">COTIZACIÓN</div>
-            <div class="b" style="font-size:18pt;">N° {{ cotizacion.numero|stringformat:"05d" }}</div>
-            <div class="fs-small mt-10">Fecha: {{ cotizacion.fecha|date:"d/m/Y" }}</div>
-            {% if cotizacion.valida_hasta %}
-            <div class="fs-small">Válida hasta: {{ cotizacion.valida_hasta|date:"d/m/Y" }}</div>
-            {% endif %}
-        </td>
+        <td class="lbl">Razón Social</td>
+        <td class="val">{{ cotizacion.cliente.razon_social }}</td>
+        <td class="lbl">RUT</td>
+        <td class="val">{{ cotizacion.cliente.rut }}</td>
+    </tr>
+    <tr>
+        <td class="lbl">Dirección</td>
+        <td class="val">{{ cotizacion.cliente.direccion }}</td>
+        <td class="lbl">Comuna</td>
+        <td class="val">{{ cotizacion.cliente.comuna|default:"-" }}</td>
     </tr>
 </table>
 
-<table class="mb-10 border">
-    <tr><td class="b bg-gray" colspan="4">DATOS DEL CLIENTE</td></tr>
-    <tr>
-        <td class="b" style="width:15%;">Señor(es):</td>
-        <td style="width:35%;">{{ cotizacion.cliente.razon_social }}</td>
-        <td class="b" style="width:15%;">RUT:</td>
-        <td style="width:35%;">{{ cotizacion.cliente.rut }}</td>
-    </tr>
-    <tr>
-        <td class="b">Dirección:</td>
-        <td>{{ cotizacion.cliente.direccion }}</td>
-        <td class="b">Comuna:</td>
-        <td>{{ cotizacion.cliente.comuna|default:"-" }}</td>
-    </tr>
-</table>
-
-{% if cotizacion.unidad_negocio or cotizacion.moneda or cotizacion.forma_pago %}
-<table class="mb-10 border">
-    <tr><td class="b bg-gray" colspan="4">CONDICIONES COMERCIALES</td></tr>
-    <tr>
-        {% if cotizacion.unidad_negocio %}<td class="b" style="width:15%;">Unidad Negocio:</td><td style="width:35%;">{{ cotizacion.unidad_negocio }}</td>{% endif %}
-        <td class="b" style="width:15%;">Moneda:</td><td style="width:35%;">{{ cotizacion.moneda }}</td>
-    </tr>
-    {% if cotizacion.forma_pago %}
-    <tr>
-        <td class="b">Forma de Pago:</td>
-        <td colspan="3">{{ cotizacion.forma_pago }}</td>
-    </tr>
+<!-- ===== CONDICIONES COMERCIALES ===== -->
+<div class="section-title">Condiciones Comerciales</div>
+<div class="info-grid">
+    {% if cotizacion.unidad_negocio %}
+    <div class="info-card">
+        <div class="label">Unidad de Negocio</div>
+        <div class="value">{{ cotizacion.unidad_negocio }}</div>
+    </div>
     {% endif %}
-</table>
-{% endif %}
+    <div class="info-card">
+        <div class="label">Moneda</div>
+        <div class="value">{{ cotizacion.moneda }}</div>
+    </div>
+    {% if cotizacion.forma_pago %}
+    <div class="info-card">
+        <div class="label">Forma de Pago</div>
+        <div class="value-sm">{{ cotizacion.forma_pago }}</div>
+    </div>
+    {% endif %}
+</div>
 
-<table class="mb-10 border">
+<!-- ===== ITEMS ===== -->
+<div class="section-title">Detalle de Servicios</div>
+<table class="items-table">
     <thead>
-        <tr class="bg-dark fs-small">
+        <tr>
             <th style="width:4%;">#</th>
             <th style="width:10%;">Recurso</th>
-            <th style="width:5%;">Cant.</th>
-            <th style="width:32%;">Descripción</th>
+            <th style="width:6%;">Cant.</th>
+            <th style="width:34%;">Descripción</th>
             <th style="width:7%;">Unidad</th>
-            <th style="width:12%;" class="tr">P. Unitario</th>
+            <th style="width:11%;" class="tr">P. Unitario</th>
             <th style="width:7%;" class="tc">% Dscto</th>
-            <th style="width:12%;" class="tr">Total</th>
+            <th style="width:11%;" class="tr">Total</th>
         </tr>
     </thead>
     <tbody>
@@ -102,72 +211,84 @@
         <tr>
             <td class="tc">{{ forloop.counter }}</td>
             <td class="tc">{{ item.recurso|default:"-" }}</td>
-            <td class="tc">{{ item.cantidad }}</td>
+            <td class="tc">{{ item.cantidad|floatformat:0 }}</td>
             <td>{{ item.descripcion }}</td>
             <td class="tc">{{ item.unidad|default:"-" }}</td>
             <td class="tr">${{ item.precio_unitario|floatformat:0 }}</td>
-            <td class="tc">{% if item.porcentaje_descuento_item or item.descuento %}{{ item.porcentaje_descuento_item|default:item.descuento|floatformat:0 }}%{% endif %}</td>
+            <td class="tc">{% if item.porcentaje_descuento_item or item.descuento %}{{ item.porcentaje_descuento_item|default:item.descuento|floatformat:0 }}%{% else %}—{% endif %}</td>
             <td class="tr">${{ item.subtotal|floatformat:0 }}</td>
         </tr>
         {% empty %}
-        <tr><td colspan="8" class="tc">Sin ítems</td></tr>
+        <tr><td colspan="8" class="tc" style="padding:14px; color:#a0aec0;">No hay ítems registrados en esta cotización.</td></tr>
         {% endfor %}
     </tbody>
 </table>
 
+<!-- ===== TOTALES ===== -->
 {% if cotizacion.porcentaje_descuento or cotizacion.subtotal %}
-<table style="width:45%; margin-left:55%;" class="mb-10">
-    <tr>
-        <td class="b">Subtotal</td>
-        <td class="tr">${{ cotizacion.subtotal|floatformat:0 }}</td>
-    </tr>
-    {% if cotizacion.porcentaje_descuento %}
-    <tr>
-        <td class="b">Descuento {{ cotizacion.porcentaje_descuento|floatformat:0 }}%</td>
-        <td class="tr">-${{ cotizacion.monto_descuento|floatformat:0 }}</td>
-    </tr>
-    {% endif %}
-    <tr>
-        <td class="b">Neto</td>
-        <td class="tr">${{ cotizacion.neto|floatformat:0 }}</td>
-    </tr>
-    <tr>
-        <td class="b">IVA 19%</td>
-        <td class="tr">${{ cotizacion.iva|floatformat:0 }}</td>
-    </tr>
-    <tr style="font-size:12pt; font-weight:bold;">
-        <td>TOTAL</td>
-        <td class="tr">${{ cotizacion.total|floatformat:0 }}</td>
-    </tr>
-</table>
+<div class="totals-wrap">
+    <table class="totals-table">
+        <tr>
+            <td class="lbl">Subtotal</td>
+            <td class="val">${{ cotizacion.subtotal|floatformat:0 }}</td>
+        </tr>
+        {% if cotizacion.porcentaje_descuento %}
+        <tr>
+            <td class="lbl">Descuento ({{ cotizacion.porcentaje_descuento|floatformat:0 }}%)</td>
+            <td class="val" style="color:#e53e3e;">-${{ cotizacion.monto_descuento|floatformat:0 }}</td>
+        </tr>
+        {% endif %}
+        <tr>
+            <td class="lbl">Neto</td>
+            <td class="val">${{ cotizacion.neto|floatformat:0 }}</td>
+        </tr>
+        <tr>
+            <td class="lbl">IVA 19%</td>
+            <td class="val">${{ cotizacion.iva|floatformat:0 }}</td>
+        </tr>
+        <tr class="total">
+            <td class="lbl">Total</td>
+            <td class="val">${{ cotizacion.total|floatformat:0 }}</td>
+        </tr>
+    </table>
+</div>
 {% else %}
-<table style="width:45%; margin-left:55%;" class="mb-10">
-    <tr style="font-size:12pt; font-weight:bold;">
-        <td>TOTAL</td>
-        <td class="tr">${{ cotizacion.total|floatformat:0 }}</td>
-    </tr>
-</table>
+<div class="totals-wrap">
+    <table class="totals-table">
+        <tr class="total">
+            <td class="lbl">Total</td>
+            <td class="val">${{ cotizacion.total|floatformat:0 }}</td>
+        </tr>
+    </table>
+</div>
 {% endif %}
 
-{% if cotizacion.observaciones or cotizacion.incluye %}
-<table class="mb-10 border">
-    {% if cotizacion.observaciones %}
-    <tr><td class="b bg-gray">OBSERVACIONES</td></tr>
-    <tr><td style="padding:6px;">{{ cotizacion.observaciones|linebreaksbr }}</td></tr>
-    {% endif %}
-    {% if cotizacion.incluye %}
-    <tr><td class="b bg-gray">INCLUYE</td></tr>
-    <tr><td style="padding:6px;">{{ cotizacion.incluye|linebreaksbr }}</td></tr>
-    {% endif %}
-</table>
+<!-- ===== OBSERVACIONES / INCLUYE ===== -->
+{% if cotizacion.observaciones %}
+<div class="obs-box">
+    <div class="title">Observaciones</div>
+    {{ cotizacion.observaciones|linebreaksbr }}
+</div>
+{% endif %}
+{% if cotizacion.incluye %}
+<div class="obs-box" style="border-left-color:#38a169;">
+    <div class="title" style="color:#38a169;">Incluye</div>
+    {{ cotizacion.incluye|linebreaksbr }}
+</div>
 {% endif %}
 
+<!-- ===== TÉRMINOS LEGALES ===== -->
 {% if config.terminos_legales %}
-<div class="terminos">
-    <div class="b" style="font-size:8pt; margin-bottom:4px;">TÉRMINOS Y CONDICIONES</div>
+<div class="legal">
+    <div class="title">Términos y Condiciones</div>
     {{ config.terminos_legales|linebreaks }}
 </div>
 {% endif %}
+
+<!-- ===== FOOTER ===== -->
+<div class="footer">
+    CACD Soluciones &nbsp;|&nbsp; {{ config.rut }} &nbsp;|&nbsp; {{ config.direccion }} &nbsp;|&nbsp; {{ config.telefono }}
+</div>
 
 </body>
 </html>
