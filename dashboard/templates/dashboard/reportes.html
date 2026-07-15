@@ -1,0 +1,112 @@
+{% extends "admin/base_site.html" %}
+{% load static %}
+
+{% block title %}Reportes Financieros{% endblock %}
+
+{% block extrastyle %}
+{{ block.super }}
+<style>
+.report-filters { background: #fff; padding: 16px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); margin-bottom: 16px; display: flex; gap: 12px; align-items: end; flex-wrap: wrap; }
+.report-filters label { font-size: 11px; font-weight: 600; text-transform: uppercase; color: #718096; display: block; margin-bottom: 4px; }
+.report-filters select, .report-filters button { padding: 6px 12px; border: 1px solid #e2e8f0; border-radius: 4px; font-size: 13px; }
+.report-filters button { background: #2c5282; color: #fff; border: none; cursor: pointer; font-weight: 600; }
+.report-filters input { padding: 6px 12px; border: 1px solid #e2e8f0; border-radius: 4px; font-size: 13px; }
+.resumen-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin-bottom: 16px; }
+.resumen-card { background: #fff; padding: 14px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+.resumen-card .num { font-size: 22px; font-weight: 800; }
+.resumen-card .label { font-size: 10px; text-transform: uppercase; color: #718096; font-weight: 600; }
+table.report-table { width: 100%; border-collapse: collapse; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,0.1); border-radius: 8px; overflow: hidden; font-size: 12px; }
+table.report-table th { background: #2c5282; color: #fff; padding: 8px 10px; text-align: left; font-size: 10px; text-transform: uppercase; }
+table.report-table td { padding: 6px 10px; border-bottom: 1px solid #edf2f7; }
+table.report-table tr:nth-child(even) td { background: #f7fafc; }
+.tr { text-align: right; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div id="content-main">
+    <h1>Reportes Financieros</h1>
+
+    <form class="report-filters" method="GET">
+        <div>
+            <label>Mes</label>
+            <select name="mes">
+                <option value="all">Todos</option>
+                {% for v, n in meses_opts %}
+                <option value="{{ v }}" {% if mes_actual == v %}selected{% endif %}>{{ n }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div>
+            <label>Año</label>
+            <input type="number" name="ano" value="{{ ano_actual }}" style="width:80px;">
+        </div>
+        <div>
+            <label>Técnico</label>
+            <select name="tecnico">
+                <option value="">Todos</option>
+                {% for t in tecnicos %}
+                <option value="{{ t }}" {% if tecnico_filtro == t %}selected{% endif %}>{{ t }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div>
+            <button type="submit">Filtrar</button>
+        </div>
+    </form>
+
+    {% if datos %}
+    <div class="resumen-grid">
+        <div class="resumen-card">
+            <div class="label">Ingresos Totales</div>
+            <div class="num" style="color:#38a169;">${{ total_ingresos|floatformat:0 }}</div>
+        </div>
+        <div class="resumen-card">
+            <div class="label">Costos Totales</div>
+            <div class="num" style="color:#e53e3e;">${{ total_costos|floatformat:0 }}</div>
+        </div>
+        <div class="resumen-card">
+            <div class="label">Margen Total</div>
+            <div class="num" style="color:#2c5282;">${{ total_margen|floatformat:0 }}</div>
+        </div>
+        <div class="resumen-card">
+            <div class="label">% Margen Promedio</div>
+            <div class="num">{{ porc_margen_total|floatformat:1 }}%</div>
+        </div>
+    </div>
+
+    <table class="report-table">
+        <tr>
+            <th>Ticket</th>
+            <th>Cliente</th>
+            <th>Técnico</th>
+            <th>Fecha</th>
+            <th class="tr">Ingreso</th>
+            <th class="tr">Costo Rep.</th>
+            <th>Horas</th>
+            <th class="tr">Costo Horas</th>
+            <th class="tr">Costo Total</th>
+            <th class="tr">Margen</th>
+            <th class="tr">% Margen</th>
+        </tr>
+        {% for d in datos %}
+        <tr>
+            <td>{{ d.codigo }}</td>
+            <td>{{ d.cliente }}</td>
+            <td>{{ d.tecnico }}</td>
+            <td>{{ d.fecha|date:"d/m/Y" }}</td>
+            <td class="tr">${{ d.ingreso|floatformat:0 }}</td>
+            <td class="tr">${{ d.costo_repuestos|floatformat:0 }}</td>
+            <td>{{ d.horas|floatformat:1 }}</td>
+            <td class="tr">${{ d.costo_horas|floatformat:0 }}</td>
+            <td class="tr">${{ d.costo_total|floatformat:0 }}</td>
+            <td class="tr" style="color:{% if d.margen >= 0 %}#38a169{% else %}#e53e3e{% endif %};">${{ d.margen|floatformat:0 }}</td>
+            <td class="tr">{{ d.porc_margen|floatformat:1 }}%</td>
+        </tr>
+        {% endfor %}
+    </table>
+    {% else %}
+    <p style="text-align:center; padding:40px; color:#a0aec0;">No hay datos para los filtros seleccionados. Asegúrate de que existan órdenes completadas con cotizaciones aprobadas.</p>
+    {% endif %}
+</div>
+{% endblock %}

@@ -14,6 +14,11 @@ class Configuracion(models.Model):
     giro = models.CharField('Giro', max_length=200, blank=True, default='Servicios de Informática')
     email_recepcion_dte = models.EmailField('Email recepción DTE', blank=True)
     terminos_legales = models.TextField('Términos legales', blank=True, help_text='Texto completo de términos y condiciones para imprimir en cotizaciones')
+    costo_hora = models.DecimalField(
+        max_digits=12, decimal_places=0, default=40845,
+        verbose_name="Costo por hora (CLP)",
+        help_text="Costo por hora de servicio para cálculo de margen"
+    )
     ultimo_numero_cotizacion = models.IntegerField('Último N° cotización', default=0)
 
     class Meta:

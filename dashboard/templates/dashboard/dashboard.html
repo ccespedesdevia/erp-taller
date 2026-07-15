@@ -1,128 +1,169 @@
 {% extends "admin/base_site.html" %}
 {% load static %}
 
-{% block title %}Dashboard{% endblock %}
+{% block title %}Dashboard {{ block.super }}{% endblock %}
 
-{% block branding %}
-<h1 id="site-name" style="font-family:'Roboto',sans-serif; font-weight:700; color:#d97706;">
-  ⚡ CACD Soluciones — Dashboard
-</h1>
+{% block extrastyle %}
+{{ block.super }}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+<style>
+.dash-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin-bottom: 24px; }
+.dash-card { background: #fff; border-radius: 8px; padding: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); border-left: 4px solid #2c5282; }
+.dash-card .num { font-size: 28px; font-weight: 800; color: #1a365d; }
+.dash-card .label { font-size: 11px; text-transform: uppercase; color: #718096; font-weight: 600; letter-spacing: 0.5px; }
+.dash-card.ingresos { border-left-color: #38a169; }
+.dash-card.tickets { border-left-color: #e53e3e; }
+.dash-card.cotizaciones { border-left-color: #2c5282; }
+.charts-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 16px; margin-bottom: 24px; }
+.chart-card { background: #fff; border-radius: 8px; padding: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+.chart-card h3 { font-size: 13px; margin: 0 0 12px; color: #2d3748; }
+.alertas-list { margin-bottom: 24px; }
+.alerta { padding: 10px 14px; margin-bottom: 6px; border-radius: 6px; font-size: 13px; display: flex; align-items: center; gap: 10px; }
+.alerta a { color: inherit; text-decoration: underline; }
+.alerta.alta { background: #fed7d7; color: #c53030; border-left: 4px solid #e53e3e; }
+.alerta.media { background: #fefcbf; color: #975a16; border-left: 4px solid #d69e2e; }
+.alerta.baja { background: #bee3f8; color: #2a4365; border-left: 4px solid #3182ce; }
+.alerta .badge { font-size: 10px; font-weight: 700; text-transform: uppercase; padding: 2px 6px; border-radius: 3px; }
+.alerta.alta .badge { background: #e53e3e; color: #fff; }
+.alerta.media .badge { background: #d69e2e; color: #fff; }
+.tablas-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.tabla-card { background: #fff; border-radius: 8px; padding: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+.tabla-card h3 { font-size: 13px; margin: 0 0 8px; color: #2d3748; }
+.tabla-card table { width: 100%; border-collapse: collapse; font-size: 12px; }
+.tabla-card td, .tabla-card th { padding: 6px 8px; border-bottom: 1px solid #edf2f7; text-align: left; }
+.tabla-card th { font-weight: 600; color: #718096; font-size: 10px; text-transform: uppercase; }
+@media (max-width: 768px) { .charts-grid { grid-template-columns: 1fr; } .tablas-grid { grid-template-columns: 1fr; } }
+</style>
 {% endblock %}
 
 {% block content %}
-<style>
-  .card-dash { background: white; border-radius: 10px; padding: 20px; box-shadow: 0 1px 4px rgba(0,0,0,.08); border-top: 3px solid #d97706; }
-  .card-dash h3 { margin: 0 0 4px; font-size: .8rem; text-transform: uppercase; letter-spacing: .5px; color: #64748b; }
-  .card-dash .valor { font-size: 2rem; font-weight: 700; color: #0f172a; }
-  .card-dash .sub { font-size: .8rem; color: #94a3b8; }
-  .badge-estado { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: .75rem; font-weight: 600; }
-  .badge-pendiente { background: #fef3c7; color: #92400e; }
-  .badge-en_curso { background: #dbeafe; color: #1e40af; }
-  .badge-completado { background: #d1fae5; color: #065f46; }
-  .badge-facturado { background: #e0e7ff; color: #3730a3; }
-  table.dash-table { width: 100%; border-collapse: collapse; font-size: .9rem; }
-  table.dash-table th { text-align: left; padding: 10px 8px; border-bottom: 2px solid #e2e8f0; color: #64748b; font-weight: 600; font-size: .75rem; text-transform: uppercase; letter-spacing: .5px; }
-  table.dash-table td { padding: 10px 8px; border-bottom: 1px solid #f1f5f9; }
-  table.dash-table tr:hover td { background: #f8fafc; }
-  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-  .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
-  @media (max-width: 768px) { .grid-4 { grid-template-columns: repeat(2, 1fr); } .grid-2 { grid-template-columns: 1fr; } }
-</style>
+<div id="content-main">
+    <h1 style="margin-top:0;">Dashboard Ejecutivo</h1>
 
-<div style="margin-bottom: 24px;">
-  <h2 style="margin:0 0 4px; color:#0f172a;">Panel de Control</h2>
-  <p style="margin:0; color:#64748b;">{{ hoy|date:"l, d F Y" }}</p>
-</div>
+    <!-- KPIs -->
+    <div class="dash-grid">
+        <div class="dash-card cotizaciones">
+            <div class="label">Cotizaciones Activas (Mes)</div>
+            <div class="num">{{ cotizaciones_activas }}</div>
+        </div>
+        <div class="dash-card tickets">
+            <div class="label">Tickets Abiertos</div>
+            <div class="num">{{ tickets_abiertos }}</div>
+        </div>
+        <div class="dash-card ingresos">
+            <div class="label">Ingresos del Mes</div>
+            <div class="num">${{ ingresos_mes|floatformat:0 }}</div>
+        </div>
+    </div>
 
-<!-- KPIs -->
-<div class="grid-4" style="margin-bottom: 24px;">
-  <div class="card-dash" style="border-top-color: #d97706;">
-    <h3>Abiertos</h3>
-    <div class="valor">{{ total_abiertos }}</div>
-    <div class="sub">{{ pendientes }} pendientes · {{ en_curso }} en curso</div>
-  </div>
-  <div class="card-dash" style="border-top-color: #0ea5e9;">
-    <h3>Este Mes</h3>
-    <div class="valor">{{ ordenes_mes }}</div>
-    <div class="sub">{{ completadas_mes }} completadas · {{ facturadas_mes }} facturadas</div>
-  </div>
-  <div class="card-dash" style="border-top-color: #10b981;">
-    <h3>Tiempo Promedio</h3>
-    <div class="valor">{{ promedio_dias }} días</div>
-    <div class="sub">desde ingreso a término</div>
-  </div>
-  <div class="card-dash" style="border-top-color: #f59e0b;">
-    <h3>Nuevos (7 días)</h3>
-    <div class="valor">{{ nuevos_semana }}</div>
-    <div class="sub">{{ horas_mes }} horas trabajadas en el mes</div>
-  </div>
-</div>
-
-<div class="grid-2" style="margin-bottom: 24px;">
-  <!-- Tickets recientes -->
-  <div class="card-dash">
-    <h3>Últimos Tickets</h3>
-    <table class="dash-table">
-      <thead>
-        <tr>
-          <th>Código</th>
-          <th>Cliente</th>
-          <th>Estado</th>
-          <th>Técnico</th>
-          <th>Ingreso</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for o in ultimas_ordenes %}
-        <tr>
-          <td><a href="{% url 'admin:ordenes_ordenservicio_change' o.id %}" style="font-weight:600; color:#d97706; text-decoration:none;">{{ o.codigo_seguimiento }}</a></td>
-          <td>{{ o.cliente.razon_social|truncatechars:25 }}</td>
-          <td><span class="badge-estado badge-{{ o.estado }}">{{ o.get_estado_display }}</span></td>
-          <td>{{ o.tecnico|default:"—" }}</td>
-          <td style="color:#64748b;">{{ o.fecha_ingreso|date:"d/m" }}</td>
-        </tr>
-        {% empty %}
-        <tr><td colspan="5" style="padding:20px; text-align:center; color:#94a3b8;">Sin tickets aún</td></tr>
+    <!-- Alertas -->
+    {% if alertas %}
+    <div class="alertas-list">
+        <h2 style="font-size:14px; margin-bottom:8px;">Alertas</h2>
+        {% for a in alertas %}
+        <div class="alerta {{ a.gravedad }}">
+            <span class="badge">{{ a.tipo }}</span>
+            <a href="{{ a.url }}" target="_blank">{{ a.mensaje }}</a>
+        </div>
         {% endfor %}
-      </tbody>
-    </table>
-    <p style="margin: 12px 0 0;"><a href="{% url 'admin:ordenes_ordenservicio_changelist' %}" style="color:#d97706; text-decoration:none; font-weight:600;">Ver todos →</a></p>
-  </div>
+    </div>
+    {% endif %}
 
-  <!-- Tickets por técnico + alertas -->
-  <div>
-    <div class="card-dash" style="margin-bottom: 20px;">
-      <h3>Tickets por Técnico</h3>
-      {% if tecnicos %}
-      {% for t in tecnicos %}
-      <div style="display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid #f1f5f9;">
-        <span style="font-weight:500;">{{ t.tecnico }}</span>
-        <span style="font-weight:700; color:#d97706;">{{ t.abiertos }} abiertos</span>
-      </div>
-      {% endfor %}
-      {% else %}
-      <p style="color:#94a3b8; margin:0;">Sin técnicos asignados</p>
-      {% endif %}
+    <!-- Gráficos -->
+    <div class="charts-grid">
+        <div class="chart-card">
+            <h3>Ingresos Mensuales</h3>
+            <canvas id="chartIngresos" height="200"></canvas>
+        </div>
+        <div class="chart-card">
+            <h3>Cotizaciones por Estado</h3>
+            <canvas id="chartEstados" height="200"></canvas>
+        </div>
+        <div class="chart-card">
+            <h3>Tickets por Técnico</h3>
+            <canvas id="chartTecnicos" height="200"></canvas>
+        </div>
+        <div class="chart-card">
+            <h3>Top Productos/Servicios</h3>
+            <canvas id="chartProductos" height="200"></canvas>
+        </div>
     </div>
 
-    <div class="card-dash">
-      <h3>Alertas</h3>
-      <div style="display:flex; flex-direction:column; gap:8px;">
-        <div style="display:flex; justify-content:space-between; padding:8px; background:#fef3c7; border-radius:6px;">
-          <span>⚠️ Garantías por vencer (30 días)</span>
-          <strong>{{ garantias_proximas }}</strong>
+    <!-- Tablas -->
+    <div class="tablas-grid">
+        <div class="tabla-card">
+            <h3>Últimas Cotizaciones</h3>
+            <table>
+                <tr><th>N°</th><th>Cliente</th><th>Total</th><th>Estado</th><th>Fecha</th></tr>
+                {% for c in ultimas_cotizaciones %}
+                <tr>
+                    <td><a href="/admin/cotizaciones/cotizacion/{{ c.pk }}/change/">{{ c.numero|stringformat:"05d" }}</a></td>
+                    <td>{{ c.cliente.razon_social|truncatechars:25 }}</td>
+                    <td>${{ c.total|floatformat:0 }}</td>
+                    <td>{{ c.estado }}</td>
+                    <td>{{ c.fecha|date:"d/m/Y" }}</td>
+                </tr>
+                {% endfor %}
+            </table>
         </div>
-        <div style="display:flex; justify-content:space-between; padding:8px; background:#fee2e2; border-radius:6px;">
-          <span>📦 Stock bajo</span>
-          <strong>{{ stock_bajo }} productos</strong>
+        <div class="tabla-card">
+            <h3>Últimos Tickets</h3>
+            <table>
+                <tr><th>Código</th><th>Cliente</th><th>Estado</th><th>Técnico</th><th>Actualización</th></tr>
+                {% for t in ultimos_tickets %}
+                <tr>
+                    <td><a href="/admin/ordenes/ordenservicio/{{ t.pk }}/change/">{{ t.codigo_seguimiento }}</a></td>
+                    <td>{{ t.cliente.razon_social|truncatechars:25 }}</td>
+                    <td>{{ t.estado }}</td>
+                    <td>{{ t.tecnico|default:"-" }}</td>
+                    <td>{{ t.updated_at|date:"d/m/Y" }}</td>
+                </tr>
+                {% endfor %}
+            </table>
         </div>
-      </div>
     </div>
-  </div>
 </div>
 
-<div style="display:flex; gap:12px; justify-content:center; margin-top: 20px;">
-  <a href="{% url 'admin:ordenes_ordenservicio_add' %}" style="background:#d97706; color:white; padding:10px 24px; border-radius:6px; text-decoration:none; font-weight:600;">+ Nuevo Ticket</a>
-  <a href="{% url 'admin:index' %}" style="background:#0f172a; color:white; padding:10px 24px; border-radius:6px; text-decoration:none; font-weight:600;">Ir al Admin</a>
-</div>
+<script>
+const chartColors = { blue: '#2c5282', green: '#38a169', red: '#e53e3e', yellow: '#d69e2e', purple: '#805ad5' };
+
+new Chart(document.getElementById('chartIngresos'), {
+    type: 'line',
+    data: {
+        labels: {{ mes_labels|safe }},
+        datasets: [{ label: 'Ingresos ($)', data: {{ ingresos_data|safe }}, borderColor: chartColors.blue, backgroundColor: 'rgba(44,82,130,0.1)', fill: true, tension: 0.3 }]
+    },
+    options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { callback: v => '$' + v.toLocaleString('es-CL') } } } }
+});
+
+new Chart(document.getElementById('chartEstados'), {
+    type: 'doughnut',
+    data: {
+        labels: {{ estados_labels|safe }},
+        datasets: [{ data: {{ estados_data|safe }}, backgroundColor: ['#2c5282','#d69e2e','#38a169','#e53e3e','#a0aec0'] }]
+    },
+    options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
+});
+
+new Chart(document.getElementById('chartTecnicos'), {
+    type: 'bar',
+    data: {
+        labels: {{ tecnicos_labels|safe }},
+        datasets: [
+            { label: 'Abiertos', data: {{ tecnicos_abiertos|safe }}, backgroundColor: chartColors.red },
+            { label: 'Cerrados', data: {{ tecnicos_cerrados|safe }}, backgroundColor: chartColors.green }
+        ]
+    },
+    options: { responsive: true, scales: { y: { beginAtZero: true, stacked: false } } }
+});
+
+new Chart(document.getElementById('chartProductos'), {
+    type: 'bar',
+    data: {
+        labels: {{ top_prod_labels|safe }},
+        datasets: [{ label: 'Cantidad', data: {{ top_prod_data|safe }}, backgroundColor: chartColors.purple }]
+    },
+    options: { indexAxis: 'y', responsive: true, plugins: { legend: { display: false } }, scales: { x: { beginAtZero: true } } }
+});
+</script>
 {% endblock %}

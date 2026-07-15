@@ -3,6 +3,7 @@ import os
 import secrets
 import string
 from django.db import models
+from django.db.models import Sum, F
 from django.conf import settings
 from clientes.models import Cliente
 from equipos.models import Equipo
@@ -30,6 +31,11 @@ class OrdenServicio(models.Model):
     trabajo_realizado = models.TextField('Trabajo realizado', blank=True)
     software_instalado = models.TextField('Software instalado/desinstalado', blank=True, help_text='Listar programas instalados o removidos')
     horas_trabajadas = models.DecimalField('Horas trabajadas', max_digits=6, decimal_places=2, default=0)
+    horas_cobradas = models.DecimalField(
+        max_digits=8, decimal_places=2, null=True, blank=True,
+        verbose_name="Horas cobradas",
+        help_text="Horas cobradas al cliente por este servicio"
+    )
     estado = models.CharField('Estado', max_length=20, choices=ESTADO_CHOICES, default='pendiente')
     garantia_fin = models.DateField('Garantía hasta', null=True, blank=True)
     notas_internas = models.TextField('Notas internas', blank=True)
@@ -77,6 +83,26 @@ class OrdenServicio(models.Model):
                 return ''
         except Exception:
             return ''
+
+    @property
+    def costo_repuestos(self):
+        total = self.repuestos.aggregate(
+            total=Sum(F('cantidad') * F('precio_unitario'))
+        )['total']
+        return total or 0
+
+    @property
+    def costo_horas(self):
+        from cotizaciones.models import Configuracion
+        horas = self.horas_cobradas or 0
+        return horas * Configuracion.obtener().costo_hora
+
+    @property
+    def margen(self):
+        cot = self.cotizaciones.filter(estado='aprobada').first()
+        if not cot:
+            return None
+        return cot.total - (self.costo_repuestos + self.costo_horas)
 
     def save(self, *args, **kwargs):
         if not self.codigo_seguimiento:
