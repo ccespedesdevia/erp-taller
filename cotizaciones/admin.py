@@ -49,7 +49,7 @@ class CotizacionAdmin(admin.ModelAdmin):
     estado_coloreado.short_description = 'Estado'
 
     def total_formateado(self, obj):
-        return format_html('${:,.0f}', float(obj.total))
+        return format_html('${}', '{:,.0f}'.format(float(obj.total)))
     total_formateado.short_description = 'Total'
 
     def num_consultas(self, obj):
