@@ -4,6 +4,28 @@
     <meta charset="UTF-8">
     <title>Cotización N° {{ cotizacion.numero|stringformat:"05d" }}</title>
     <style>
+        .no-print { display: block; }
+        @media print { .no-print { display: none; } }
+        .print-bar {
+            position: fixed; top: 0; left: 0; right: 0; z-index: 999;
+            background: #1a365d; color: #fff; padding: 10px 20px;
+            display: flex; justify-content: space-between; align-items: center;
+            font-family: 'Helvetica', 'Arial', sans-serif;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        }
+        .print-bar .tit { font-weight: 700; font-size: 11pt; }
+        .print-bar .tit span { color: #f6ad55; }
+        .print-btn {
+            background: #f6ad55; color: #1a365d; border: none;
+            padding: 8px 20px; border-radius: 4px; font-size: 10pt;
+            font-weight: 700; cursor: pointer;
+            transition: background 0.2s;
+        }
+        .print-btn:hover { background: #fbbf6a; }
+        .print-btn i { font-style: normal; margin-right: 6px; }
+        body { padding-top: 48px; }
+        @media print { body { padding-top: 0; } }
+    </style>
         @page { size: letter; margin: 1.2cm 1.5cm; }
         body {
             font-family: 'Helvetica', 'Arial', sans-serif;
@@ -134,6 +156,14 @@
     </style>
 </head>
 <body>
+
+<!-- ===== PRINT BAR ===== -->
+<div class="no-print print-bar">
+    <div class="tit">CACD <span>Soluciones</span> — Cotización N° {{ cotizacion.numero|stringformat:"05d" }}</div>
+    <div>
+        <button class="print-btn" onclick="window.print()"><i>🖨</i> Imprimir / PDF</button>
+    </div>
+</div>
 
 <!-- ===== HEADER ===== -->
 <div class="doc-header">
