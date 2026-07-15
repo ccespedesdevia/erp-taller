@@ -28,7 +28,7 @@ class CotizacionAdmin(admin.ModelAdmin):
     list_filter = ['estado', 'fecha']
     search_fields = ['numero', 'cliente__razon_social']
     inlines = [ItemCotizacionInline, CotizacionConsultaInline]
-    readonly_fields = ['numero', 'total', 'created_at', 'updated_at', 'link_publico']
+    readonly_fields = ['numero', 'fecha', 'total', 'created_at', 'updated_at', 'link_publico']
     fieldsets = (
         ('Información general', {'fields': ['numero', 'cliente', 'orden', 'fecha', 'valida_hasta', 'estado']}),
         ('Documentos y previsualización', {'fields': ['archivo_oc_cliente', 'link_publico']}),
