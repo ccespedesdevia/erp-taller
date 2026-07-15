@@ -130,23 +130,10 @@
         .tr { text-align: right; }
         .b { font-weight: 700; }
 
-        .no-print { display: block; }
         @media print { .no-print { display: none; } }
-        .print-btn {
-            display: inline-block; margin-bottom: 12px;
-            background: #2c5282; color: #fff; border: none;
-            padding: 8px 18px; border-radius: 4px; font-size: 9pt;
-            font-weight: 600; cursor: pointer;
-            transition: background 0.2s;
-        }
-        .print-btn:hover { background: #1a365d; }
     </style>
 </head>
 <body>
-
-<div class="no-print" style="text-align:right;">
-    <button class="print-btn" onclick="window.print()">🖨 Imprimir / PDF</button>
-</div>
 
 <!-- ===== HEADER ===== -->
 <div class="doc-header">
