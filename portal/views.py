@@ -321,8 +321,10 @@ def portal_cotizacion_detail(request, numero):
 
 
 def cotizacion_pdf(request, numero):
+    from cotizaciones.models import Configuracion
     cotizacion = get_object_or_404(Cotizacion, numero=numero)
-    return render(request, 'cotizaciones/cotizacion_pdf.html', {'cotizacion': cotizacion})
+    config = Configuracion.obtener()
+    return render(request, 'cotizaciones/cotizacion_pdf.html', {'cotizacion': cotizacion, 'config': config})
 
 
 def chat_inicio(request):

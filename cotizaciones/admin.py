@@ -6,7 +6,8 @@ from .models import Cotizacion, ItemCotizacion, CotizacionConsulta, Configuracio
 class ItemCotizacionInline(admin.TabularInline):
     model = ItemCotizacion
     extra = 2
-    fields = ['producto', 'descripcion', 'cantidad', 'precio_unitario', 'descuento']
+    fields = ['producto', 'recurso', 'descripcion', 'cantidad', 'unidad', 'precio_unitario', 'descuento', 'porcentaje_descuento_item', 'total_item']
+    readonly_fields = ['total_item']
     autocomplete_fields = ['producto']
 
 
@@ -28,14 +29,15 @@ class CotizacionAdmin(admin.ModelAdmin):
     list_filter = ['estado', 'fecha']
     search_fields = ['numero', 'cliente__razon_social']
     inlines = [ItemCotizacionInline, CotizacionConsultaInline]
-    readonly_fields = ['numero', 'fecha', 'total', 'created_at', 'updated_at', 'link_publico']
+    readonly_fields = ['numero', 'fecha', 'subtotal', 'monto_descuento', 'neto', 'iva', 'total', 'created_at', 'updated_at', 'link_publico']
     fieldsets = (
         ('Información general', {'fields': ['numero', 'cliente', 'orden', 'fecha', 'valida_hasta', 'estado']}),
-        ('Documentos y previsualización', {'fields': ['archivo_oc_cliente', 'link_publico']}),
-        ('Notas', {'fields': ['notas']}),
-        ('Totales', {'fields': ['total']}),
+        ('Negocio', {'fields': ['unidad_negocio', 'moneda', 'forma_pago', 'archivo_oc_cliente'], 'classes': ['collapse']}),
+        ('Detalle', {'fields': ['notas', 'observaciones', 'incluye'], 'classes': ['collapse']}),
+        ('Totales', {'fields': ['subtotal', 'porcentaje_descuento', 'monto_descuento', 'neto', 'iva', 'total']}),
+        ('Documentos y previsualización', {'fields': ['link_publico']}),
     )
-    actions = ['marcar_enviada', 'marcar_aprobada', 'duplicar_cotizacion']
+    actions = ['marcar_enviada', 'marcar_aprobada', 'duplicar_cotizacion', 'recalcular_totales']
 
     def codigo(self, obj):
         return f'COT-{obj.numero:05d}' if obj.numero else f'COT-#{obj.id}'
@@ -81,21 +83,37 @@ class CotizacionAdmin(admin.ModelAdmin):
 
     def duplicar_cotizacion(self, request, queryset):
         for original in queryset:
-            items_data = list(original.items.values('producto_id', 'descripcion', 'cantidad', 'precio_unitario', 'descuento'))
+            items_data = list(original.items.values('producto_id', 'recurso', 'descripcion', 'cantidad', 'unidad', 'precio_unitario', 'descuento', 'porcentaje_descuento_item'))
             nueva = Cotizacion(
                 cliente=original.cliente,
                 valida_hasta=original.valida_hasta,
                 notas=f'Duplicado de COT-{original.numero:05d}\n\n{original.notas}',
+                unidad_negocio=original.unidad_negocio,
+                moneda=original.moneda,
+                forma_pago=original.forma_pago,
+                porcentaje_descuento=original.porcentaje_descuento,
             )
             nueva.save()
             for item_data in items_data:
                 ItemCotizacion.objects.create(cotizacion=nueva, **item_data)
+            nueva.recalcular_totales()
     duplicar_cotizacion.short_description = 'Duplicar cotización seleccionada'
+
+    def recalcular_totales(self, request, queryset):
+        for cot in queryset:
+            cot.recalcular_totales()
+        self.message_user(request, f'{queryset.count()} cotización(es) recalculada(s).')
+    recalcular_totales.short_description = 'Recalcular totales seleccionadas'
 
 
 @admin.register(Configuracion)
 class ConfiguracionAdmin(admin.ModelAdmin):
-    list_display = ['nombre_empresa', 'rut', 'ultimo_numero_cotizacion']
+    list_display = ['nombre_empresa', 'rut', 'giro', 'ultimo_numero_cotizacion']
+    fieldsets = (
+        ('Empresa', {'fields': ['nombre_empresa', 'rut', 'giro', 'direccion', 'telefono', 'email', 'email_recepcion_dte']}),
+        ('Numeración', {'fields': ['ultimo_numero_cotizacion']}),
+        ('Términos legales', {'fields': ['terminos_legales'], 'classes': ['wide']}),
+    )
 
     def has_add_permission(self, request):
         return not Configuracion.objects.exists()
